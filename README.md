@@ -17,11 +17,31 @@ Skills para o **pi** (agente de IA) que permitem gerenciar, testar e ajustar age
 
 ### 1. Pré-requisitos
 
-- **pi** instalado (https://github.com/badlogic/pi)
+- **pi** instalado — veja abaixo como instalar
 - **Chave de API do Chatvolt** → https://app.chatvolt.ai/settings/api-keys
 - **ID do agente** que você quer gerenciar (UUID ou handle tipo `@meu-agente`)
 
-### 2. Instalação
+#### 📦 Como instalar o pi
+
+> **pi** é um agente de IA de código aberto para terminal.
+
+| Sistema | Instalação |
+|---------|-----------|
+| **Linux / macOS / WSL** | `npm install -g @earendil-works/pi-coding-agent` |
+| **Windows (PowerShell)** | `npm install -g @earendil-works/pi-coding-agent` |
+| **Alternativa (pip)** | `pip install pi-ai` |
+| **Site oficial** | https://pi.dev |
+| **Documentação** | https://github.com/earendil-works/pi |
+| **Pacote npm** | https://www.npmjs.com/package/@earendil-works/pi-coding-agent |
+
+> 💡 Precisa do **Node.js 18+**. Baixe em https://nodejs.org
+
+Depois de instalar, teste:
+```bash
+pi --version
+```
+
+### 2. Instalação das skills
 
 Clone o repositório:
 
