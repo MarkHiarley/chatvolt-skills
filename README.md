@@ -30,9 +30,13 @@ git clone https://github.com/MarkHiarley/chatvolt-skills.git
 cd chatvolt-skills
 ```
 
-Agora você precisa **instalar as skills no pi**. Há 3 jeitos:
+Agora você precisa **instalar as skills no pi**. Escolha seu sistema:
 
-#### Opção A — Instalar via link simbólico (recomendado)
+---
+
+#### 🐧 Linux / macOS
+
+##### Opção A — Link simbólico (recomendado)
 
 ```bash
 mkdir -p ~/.pi/agent/skills
@@ -42,28 +46,73 @@ ln -s "$(pwd)/prompt-adjust" ~/.pi/agent/skills/
 ln -s "$(pwd)/tools-update" ~/.pi/agent/skills/
 ```
 
-Pronto! O pi já detecta as skills automaticamente.
+Ou use o instalador automático:
 
-#### Opção B — Copiar as pastas
+```bash
+./install.sh
+```
+
+##### Opção B — Copiar as pastas
 
 ```bash
 mkdir -p ~/.pi/agent/skills
 cp -r agent-test investigation prompt-adjust tools-update ~/.pi/agent/skills/
 ```
 
-#### Opção C — Usar diretamente com --skill (sem instalar)
+```bash
+./install.sh --copy
+```
+
+##### Opção C — Usar direto com --skill (sem instalar)
 
 ```bash
-# Cada vez que for usar, passe os caminhos:
 pi --skill ./agent-test
 pi --skill ./investigation
-# ou múltiplos:
 pi --skill ./agent-test --skill ./tools-update
 ```
 
+---
+
+#### 🪟 Windows (PowerShell)
+
+##### Opção A — Link simbólico (recomendado)
+
+```powershell
+# Cria a pasta de skills se não existir
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.pi\agent\skills"
+
+# Cria os links simbólicos (precisa de admin ou modo desenvolvedor ativado)
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\agent-test" -Target "$pwd\agent-test"
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\investigation" -Target "$pwd\investigation"
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\prompt-adjust" -Target "$pwd\prompt-adjust"
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\tools-update" -Target "$pwd\tools-update"
+```
+
+> ⚠️ Se der erro de permissão, abra o PowerShell como **Administrador** ou use a Opção B.
+
+##### Opção B — Copiar as pastas
+
+```powershell
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.pi\agent\skills"
+Copy-Item -Recurse -Force "$pwd\agent-test" "$env:USERPROFILE\.pi\agent\skills\"
+Copy-Item -Recurse -Force "$pwd\investigation" "$env:USERPROFILE\.pi\agent\skills\"
+Copy-Item -Recurse -Force "$pwd\prompt-adjust" "$env:USERPROFILE\.pi\agent\skills\"
+Copy-Item -Recurse -Force "$pwd\tools-update" "$env:USERPROFILE\.pi\agent\skills\"
+```
+
+##### Opção C — Usar direto com --skill (sem instalar)
+
+```powershell
+pi --skill .\agent-test
+pi --skill .\investigation
+pi --skill .\agent-test --skill .\tools-update
+```
+
+---
+
 ### 3. Como usar com o pi
 
-Depois de instalado (opção A ou B), é só **conversar** com o pi. As skills carregam automaticamente quando o contexto faz sentido. Exemplos:
+Depois de instalado, é só **conversar** com o pi. As skills carregam automaticamente quando o contexto faz sentido. Exemplos:
 
 #### 🧪 Testar um agente
 > "pi, testa o agente [ID] com API key [KEY]. Quero ver se ele responde em português e não inventa preços."
@@ -102,11 +151,18 @@ Se quiser chamar uma skill específica pelo nome:
 
 ### 5. Variáveis de ambiente (atalho)
 
-Para não digitar a chave toda vez, defina no `~/.bashrc` ou `~/.zshrc`:
+Para não digitar a chave toda vez:
 
+#### Linux / macOS (no ~/.bashrc ou ~/.zshrc)
 ```bash
 export CHATVOLT_API_KEY="sk-..."
 export CHATVOLT_AGENT_ID="cminahdll02m496hey09nozu8"
+```
+
+#### Windows (PowerShell, no $PROFILE)
+```powershell
+$env:CHATVOLT_API_KEY = "sk-..."
+$env:CHATVOLT_AGENT_ID = "cminahdll02m496hey09nozu8"
 ```
 
 Depois é só chamar o pi e falar:
@@ -116,7 +172,7 @@ Depois é só chamar o pi e falar:
 
 ## 💻 Usando direto pelo terminal (sem o pi)
 
-Cada skill tem scripts independentes em `scripts/`:
+Cada skill tem scripts independentes em `scripts/`. Eles funcionam em **qualquer sistema** com `bash` e `curl` (no Windows use Git Bash ou WSL).
 
 ```bash
 # Ver configuração
@@ -226,6 +282,7 @@ Você: sim, city (obrigatório, preenchido pelo usuário)
 ```
 chatvolt-skills/
 ├── README.md                    ← Você está aqui
+├── install.sh                   ← Instalador automático (Linux/macOS)
 ├── chatvolt.sh                  ← Script de atalho (uso direto)
 ├── agent-test/                  ← Skill de teste de agentes
 │   ├── SKILL.md                 ← Instruções pro pi
