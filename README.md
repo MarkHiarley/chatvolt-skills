@@ -17,29 +17,53 @@ Skills para o **pi** (agente de IA) que permitem gerenciar, testar e ajustar age
 
 ### 1. Pré-requisitos
 
-- **pi** instalado (https://pi.ai)
+- **pi** instalado (https://github.com/badlogic/pi)
 - **Chave de API do Chatvolt** → https://app.chatvolt.ai/settings/api-keys
 - **ID do agente** que você quer gerenciar (UUID ou handle tipo `@meu-agente`)
 
-### 2. Instalação — você NÃO precisa clonar este repositório
+### 2. Instalação
 
-As skills já estão instaladas automaticamente no pi em:
+Clone o repositório:
+
+```bash
+git clone https://github.com/MarkHiarley/chatvolt-skills.git
+cd chatvolt-skills
 ```
-~/.pi/agent/skills/
+
+Agora você precisa **instalar as skills no pi**. Há 3 jeitos:
+
+#### Opção A — Instalar via link simbólico (recomendado)
+
+```bash
+mkdir -p ~/.pi/agent/skills
+ln -s "$(pwd)/agent-test" ~/.pi/agent/skills/
+ln -s "$(pwd)/investigation" ~/.pi/agent/skills/
+ln -s "$(pwd)/prompt-adjust" ~/.pi/agent/skills/
+ln -s "$(pwd)/tools-update" ~/.pi/agent/skills/
 ```
 
-O pi já detecta todas as skills e carrega conforme a necessidade.
+Pronto! O pi já detecta as skills automaticamente.
 
-> Este repositório no GitHub serve como **fonte oficial** e **documentação**.  
-> Você só precisa clonar SE quiser ver os scripts ou contribuir:
-> ```bash
-> git clone https://github.com/MarkHiarley/chatvolt-skills.git
-> cd chatvolt-skills
-> ```
+#### Opção B — Copiar as pastas
+
+```bash
+mkdir -p ~/.pi/agent/skills
+cp -r agent-test investigation prompt-adjust tools-update ~/.pi/agent/skills/
+```
+
+#### Opção C — Usar diretamente com --skill (sem instalar)
+
+```bash
+# Cada vez que for usar, passe os caminhos:
+pi --skill ./agent-test
+pi --skill ./investigation
+# ou múltiplos:
+pi --skill ./agent-test --skill ./tools-update
+```
 
 ### 3. Como usar com o pi
 
-Basta **conversar** com o pi. As skills carregam automaticamente quando o contexto faz sentido. Exemplos:
+Depois de instalado (opção A ou B), é só **conversar** com o pi. As skills carregam automaticamente quando o contexto faz sentido. Exemplos:
 
 #### 🧪 Testar um agente
 > "pi, testa o agente [ID] com API key [KEY]. Quero ver se ele responde em português e não inventa preços."
@@ -63,7 +87,7 @@ Basta **conversar** com o pi. As skills carregam automaticamente quando o contex
 
 > "pi, cria uma HTTP tool no agente [ID] pra consultar preços."
 >
-> *Opi pergunta a URL, método, headers e configura.*
+> *O pi pergunta a URL, método, headers e configura.*
 
 ### 4. Forçar o carregamento de uma skill
 
@@ -96,13 +120,13 @@ Cada skill tem scripts independentes em `scripts/`:
 
 ```bash
 # Ver configuração
-~/.pi/agent/skills/chatvolt-agent-test/scripts/get-agent.sh "$CHATVOLT_API_KEY" "$CHATVOLT_AGENT_ID"
+./agent-test/scripts/get-agent.sh "$API_KEY" "$AGENT_ID"
 
 # Testar interativamente
-~/.pi/agent/skills/chatvolt-agent-test/scripts/test-agent.sh "$CHATVOLT_API_KEY" "$CHATVOLT_AGENT_ID"
+./agent-test/scripts/test-agent.sh "$API_KEY" "$AGENT_ID"
 
 # Listar tools
-~/.pi/agent/skills/chatvolt-tools-update/scripts/list-tools.sh "$CHATVOLT_API_KEY" "$CHATVOLT_AGENT_ID"
+./tools-update/scripts/list-tools.sh "$API_KEY" "$AGENT_ID"
 ```
 
 ---
