@@ -51,7 +51,16 @@ git clone https://github.com/MarkHiarley/chatvolt-skills.git
 cd chatvolt-skills
 ```
 
-Agora instale as skills no pi. Escolha seu sistema:
+Execute o instalador:
+
+```bash
+./install.sh
+```
+
+> O `install.sh` cria links simbolicos das skills no `~/.pi/agent/skills/`.
+> Use `./install.sh --copy` se preferir copiar as pastas em vez de link.
+
+Se preferir instalar manualmente, escolha seu sistema:
 
 ---
 
