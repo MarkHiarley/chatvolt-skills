@@ -1,62 +1,63 @@
-# Chatvolt Skills 🎯
+# Chatvolt Skills
 
 Skills para o **pi** (agente de IA) que permitem gerenciar, testar e ajustar agentes **Chatvolt** via API.
 
-## 📋 O que essas skills fazem
+## Sobre
 
-| Skill | O que faz |
+| Skill | Descricao |
 |-------|-----------|
-| **agent-test** | Testa agentes: envia perguntas, mantém conversa, verifica se segue as regras |
-| **investigation** | Investiga: busca system prompt, conversas, mensagens e analisa conformidade |
+| **agent-test** | Testa agentes: envia perguntas, mantem conversa, verifica se segue as regras |
+| **investigation** | Investiga: busca system prompt, conversas, mensagens e analise de conformidade |
 | **prompt-adjust** | Ajusta: edita prompt, troca modelo, altera temperatura |
 | **tools-update** | Gerencia tools: cria, lista, atualiza e deleta (datastore, HTTP, form) |
 
 ---
 
-## 🚀 Tutorial rápido
+## Tutorial rapido
 
-### 1. Pré-requisitos
+### 1. Pre-requisitos
 
-- **pi** instalado — veja abaixo como instalar
-- **Chave de API do Chatvolt** → https://app.chatvolt.ai/settings/api-keys
-- **ID do agente** que você quer gerenciar (UUID ou handle tipo `@meu-agente`)
+- **pi** instalado (veja abaixo como instalar)
+- **Chave de API do Chatvolt**: https://app.chatvolt.ai/settings/api-keys
+- **ID do agente** (UUID ou handle como `@meu-agente`)
 
-#### 📦 Como instalar o pi
+#### Como instalar o pi
 
-> **pi** é um agente de IA de código aberto para terminal.
+> **pi** e um agente de IA de codigo aberto para terminal.
 
-| Sistema | Instalação |
+| Sistema | Instalacao |
 |---------|-----------|
-| **Linux / macOS / WSL** | `npm install -g @earendil-works/pi-coding-agent` |
-| **Windows (PowerShell)** | `npm install -g @earendil-works/pi-coding-agent` |
-| **Alternativa (pip)** | `pip install pi-ai` |
-| **Site oficial** | https://pi.dev |
-| **Documentação** | https://github.com/earendil-works/pi |
-| **Pacote npm** | https://www.npmjs.com/package/@earendil-works/pi-coding-agent |
+| Linux / macOS / WSL | `npm install -g @earendil-works/pi-coding-agent` |
+| Windows (PowerShell) | `npm install -g @earendil-works/pi-coding-agent` |
+| Alternativa (pip) | `pip install pi-ai` |
+| Site oficial | https://pi.dev |
+| Documentacao | https://github.com/earendil-works/pi |
+| Pacote npm | https://www.npmjs.com/package/@earendil-works/pi-coding-agent |
 
-> 💡 Precisa do **Node.js 18+**. Baixe em https://nodejs.org
+> Necessario **Node.js 18+**. Baixe em https://nodejs.org
 
-Depois de instalar, teste:
+Apos instalar, teste com:
+
 ```bash
 pi --version
 ```
 
-### 2. Instalação das skills
+### 2. Instalacao das skills
 
-Clone o repositório:
+Clone o repositorio:
 
 ```bash
 git clone https://github.com/MarkHiarley/chatvolt-skills.git
 cd chatvolt-skills
 ```
 
-Agora você precisa **instalar as skills no pi**. Escolha seu sistema:
+Agora instale as skills no pi. Escolha seu sistema:
 
 ---
 
-#### 🐧 Linux / macOS
+#### Linux / macOS
 
-##### Opção A — Link simbólico (recomendado)
+##### Opcao A — Link simbolico (recomendado)
 
 ```bash
 mkdir -p ~/.pi/agent/skills
@@ -66,13 +67,13 @@ ln -s "$(pwd)/prompt-adjust" ~/.pi/agent/skills/
 ln -s "$(pwd)/tools-update" ~/.pi/agent/skills/
 ```
 
-Ou use o instalador automático:
+Ou use o instalador automatico:
 
 ```bash
 ./install.sh
 ```
 
-##### Opção B — Copiar as pastas
+##### Opcao B — Copiar as pastas
 
 ```bash
 mkdir -p ~/.pi/agent/skills
@@ -83,7 +84,7 @@ cp -r agent-test investigation prompt-adjust tools-update ~/.pi/agent/skills/
 ./install.sh --copy
 ```
 
-##### Opção C — Usar direto com --skill (sem instalar)
+##### Opcao C — Usar direto com --skill (sem instalar)
 
 ```bash
 pi --skill ./agent-test
@@ -93,24 +94,21 @@ pi --skill ./agent-test --skill ./tools-update
 
 ---
 
-#### 🪟 Windows (PowerShell)
+#### Windows (PowerShell)
 
-##### Opção A — Link simbólico (recomendado)
+##### Opcao A — Link simbolico (recomendado)
 
 ```powershell
-# Cria a pasta de skills se não existir
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.pi\agent\skills"
-
-# Cria os links simbólicos (precisa de admin ou modo desenvolvedor ativado)
 New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\agent-test" -Target "$pwd\agent-test"
 New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\investigation" -Target "$pwd\investigation"
 New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\prompt-adjust" -Target "$pwd\prompt-adjust"
 New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\tools-update" -Target "$pwd\tools-update"
 ```
 
-> ⚠️ Se der erro de permissão, abra o PowerShell como **Administrador** ou use a Opção B.
+> Se der erro de permissao, abra o PowerShell como **Administrador** ou use a Opcao B.
 
-##### Opção B — Copiar as pastas
+##### Opcao B — Copiar as pastas
 
 ```powershell
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.pi\agent\skills"
@@ -120,7 +118,7 @@ Copy-Item -Recurse -Force "$pwd\prompt-adjust" "$env:USERPROFILE\.pi\agent\skill
 Copy-Item -Recurse -Force "$pwd\tools-update" "$env:USERPROFILE\.pi\agent\skills\"
 ```
 
-##### Opção C — Usar direto com --skill (sem instalar)
+##### Opcao C — Usar direto com --skill (sem instalar)
 
 ```powershell
 pi --skill .\agent-test
@@ -132,35 +130,22 @@ pi --skill .\agent-test --skill .\tools-update
 
 ### 3. Como usar com o pi
 
-Depois de instalado, é só **conversar** com o pi. As skills carregam automaticamente quando o contexto faz sentido. Exemplos:
+Apos instalado, converse com o pi. As skills carregam automaticamente quando o contexto faz sentido. Exemplos:
 
-#### 🧪 Testar um agente
-> "pi, testa o agente [ID] com API key [KEY]. Quero ver se ele responde em português e não inventa preços."
->
-> *O pi pergunta qual o fluxo esperado, inicia uma conversa e vai te guiando.*
+#### Testar um agente
+> "pi, testa o agente [ID] com API key [KEY]. Quero ver se ele responde em portugues e nao inventa precos."
 
-#### 🔍 Investigar um agente
+#### Investigar um agente
 > "pi, investiga o agente [ID]. Quero ver o system prompt e as tools que ele tem."
->
-> *O pi busca a configuração completa e exibe.*
 
-#### ✏️ Ajustar prompt ou modelo
+#### Ajustar prompt ou modelo
 > "pi, troca o modelo do agente [ID] para gpt_4_o e ajusta a temperatura pra 0.2."
->
-> *O pi aplica as alterações via API.*
 
-#### 🛠️ Gerenciar tools
+#### Gerenciar tools
 > "pi, lista as tools do agente [ID]."
->
-> *O pi mostra todas as tools configuradas.*
+> "pi, cria uma HTTP tool no agente [ID] pra consultar precos."
 
-> "pi, cria uma HTTP tool no agente [ID] pra consultar preços."
->
-> *O pi pergunta a URL, método, headers e configura.*
-
-### 4. Forçar o carregamento de uma skill
-
-Se quiser chamar uma skill específica pelo nome:
+### 4. Forcar o carregamento de uma skill
 
 ```
 /skill:chatvolt-agent-test
@@ -169,9 +154,7 @@ Se quiser chamar uma skill específica pelo nome:
 /skill:chatvolt-tools-update
 ```
 
-### 5. Variáveis de ambiente (atalho)
-
-Para não digitar a chave toda vez:
+### 5. Variaveis de ambiente (atalho)
 
 #### Linux / macOS (no ~/.bashrc ou ~/.zshrc)
 ```bash
@@ -185,17 +168,14 @@ $env:CHATVOLT_API_KEY = "sk-..."
 $env:CHATVOLT_AGENT_ID = "cminahdll02m496hey09nozu8"
 ```
 
-Depois é só chamar o pi e falar:
-> "pi, testa o agente padrão com a query 'Qual o horário de funcionamento?'"
-
 ---
 
-## 💻 Usando direto pelo terminal (sem o pi)
+## Uso direto pelo terminal (sem o pi)
 
-Cada skill tem scripts independentes em `scripts/`. Eles funcionam em **qualquer sistema** com `bash` e `curl` (no Windows use Git Bash ou WSL).
+Cada skill tem scripts independentes em `scripts/`. Funcionam em qualquer sistema com `bash` e `curl` (no Windows use Git Bash ou WSL).
 
 ```bash
-# Ver configuração
+# Ver configuracao
 ./agent-test/scripts/get-agent.sh "$API_KEY" "$AGENT_ID"
 
 # Testar interativamente
@@ -207,70 +187,69 @@ Cada skill tem scripts independentes em `scripts/`. Eles funcionam em **qualquer
 
 ---
 
-## 📖 Exemplos de conversas com o pi
+## Exemplos de conversas com o pi
 
 ### Exemplo 1: Testar se o agente segue o prompt
 
 ```
-Você: pi, testa o agente cminahdll02m496hey09nozu8
+Voce: pi, testa o agente cminahdll02m496hey09nozu8
       com a API key sk-1234
-      Quero testar se ele responde em português e se apresenta como "Assistente"
+      Quero testar se ele responde em portugues e se apresenta como "Assistente"
 
-  pi: Beleza! Deixa eu buscar a configuração do agente...
-      
+  pi: Buscando configuracao do agente...
+
       Agent: Meu Agente (gpt_4_o, temp: 0.3)
-      
-      System Prompt:
-      """Você é um assistente da Empresa X.
-      Regras:
-      - Responda sempre em português
-      - Se apresente como "Assistente da Empresa X"
-      - Não forneça preços, direcione para o site"""
-      
-      Qual o fluxo esperado? O que o agente DEVE fazer?
-      
-Você: Responder em português, se apresentar como
-      "Assistente da Empresa X", não inventar preços
 
-  pi: Ok! Vou iniciar uma nova conversa. 
-      Qual a primeira pergunta que você quer enviar?
-      
-Você: Quem é você?
+      System Prompt:
+      """Voce e um assistente da Empresa X.
+      Regras:
+      - Responda sempre em portugues
+      - Se apresente como "Assistente da Empresa X"
+      - Nao fornea precos, direcione para o site"""
+
+      Qual o fluxo esperado? O que o agente DEVE fazer?
+
+Voce: Responder em portugues, se apresentar como
+      "Assistente da Empresa X", nao inventar precos
+
+  pi: Ok. Iniciando nova conversa.
+      Qual a primeira pergunta?
+
+Voce: Quem e voce?
 
   pi: Enviando...
-      
-      Assistant: Olá! Eu sou o Assistente da Empresa X. 
-      Como posso ajudar você hoje?
-      
-      ✅ Respondeu em português
-      ✅ Se apresentou corretamente
-      
-      Quer continuar o teste? (sim/nova conversa/analisar/sair)
+
+      Assistant: Ola! Eu sou o Assistente da Empresa X.
+      Como posso ajudar voce hoje?
+
+      Regras verificadas:
+      - Respondeu em portugues: OK
+      - Se apresentou corretamente: OK
 ```
 
 ### Exemplo 2: Adicionar uma tool HTTP
 
 ```
-Você: pi, adiciona uma tool HTTP no agente cminahdll02m496hey09nozu8
-      pra consultar clima
+Voce: pi, adiciona uma tool HTTP no agente cminahdll02m496hey09nozu8
+      para consultar clima
 
   pi: Qual a URL da API?
-      
-Você: https://api.weather.com/v1/weather
 
-  pi: Qual o método HTTP?
-      
-Você: GET
+Voce: https://api.weather.com/v1/weather
 
-  pi: Precisa de headers? (ex: Authorization)
-      
-Você: sim, Authorization: Bearer token123
+  pi: Qual o metodo HTTP?
 
-  pi: Tem parâmetros de query?
-      
-Você: sim, city (obrigatório, preenchido pelo usuário)
+Voce: GET
 
-  pi: ✅ Tool criada com sucesso!
+  pi: Precisa de headers?
+
+Voce: sim, Authorization: Bearer token123
+
+  pi: Tem parametros de query?
+
+Voce: sim, city (obrigatorio, preenchido pelo usuario)
+
+  pi: Tool criada com sucesso.
       ID: clwscf12b000208l6e4f3h7j8
       Name: Consultar Clima
       URL: https://api.weather.com/v1/weather
@@ -278,9 +257,9 @@ Você: sim, city (obrigatório, preenchido pelo usuário)
 
 ---
 
-## 🔌 API usada
+## API
 
-| Método | Endpoint | Skill |
+| Metodo | Endpoint | Skill |
 |--------|----------|-------|
 | `GET` | `/agents/{id}` | investigation, prompt-adjust, agent-test |
 | `PATCH` | `/agents/{id}` | prompt-adjust |
@@ -292,37 +271,36 @@ Você: sim, city (obrigatório, preenchido pelo usuário)
 | `GET` | `/conversation?agentId={id}` | investigation |
 | `GET` | `/conversation/{id}/messages/{count}` | investigation |
 
-**Base URL:** `https://api.chatvolt.ai`  
-**Autenticação:** `Authorization: Bearer <api-key>`
+**Base URL:** `https://api.chatvolt.ai`
+**Autenticacao:** `Authorization: Bearer <api-key>`
 
 ---
 
-## 📁 Estrutura do repositório
+## Estrutura do repositorio
 
 ```
 chatvolt-skills/
-├── README.md                    ← Você está aqui
-├── install.sh                   ← Instalador automático (Linux/macOS)
-├── chatvolt.sh                  ← Script de atalho (uso direto)
-├── agent-test/                  ← Skill de teste de agentes
-│   ├── SKILL.md                 ← Instruções pro pi
-│   └── scripts/                 ← Scripts auxiliares
+├── README.md
+├── install.sh                   -- Instalador automatico (Linux/macOS)
+├── chatvolt.sh                  -- Script de atalho (uso direto)
+├── agent-test/                  -- Skill de teste de agentes
+│   ├── SKILL.md
+│   └── scripts/
 │       ├── get-agent.sh
 │       ├── send-query.sh
 │       ├── analyze-results.sh
 │       └── test-agent.sh
-├── investigation/               ← Skill de investigação
+├── investigation/               -- Skill de investigacao
 │   ├── SKILL.md
 │   └── scripts/
-├── prompt-adjust/               ← Skill de ajuste de prompt
+├── prompt-adjust/               -- Skill de ajuste de prompt
 │   ├── SKILL.md
 │   └── scripts/
-└── tools-update/                ← Skill de gerenciamento de tools
+└── tools-update/                -- Skill de gerenciamento de tools
     ├── SKILL.md
     └── scripts/
 ```
 
 ---
 
-> 💡 **Dica:** A maneira mais fácil de usar é simplesmente conversar com o pi.  
-> Ele já tem as skills carregadas e sabe o que fazer. Basta pedir!
+> A maneira mais facil de usar e simplesmente conversar com o pi. Ele ja tem as skills carregadas e sabe o que fazer. Basta pedir.
