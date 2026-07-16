@@ -3,9 +3,12 @@ set -euo pipefail
 
 # Chatvolt Send Query
 # Usage:
-#   ./send-query.sh <api-key> <agent-id> <query>                   (cria nova conversa)
-#   ./send-query.sh <api-key> <agent-id> <query> <conversation-id> (continua conversa)
+#   ./send-query.sh <api-key> <agent-id> <query>                   (cria nova conversa - PREFERIDO)
+#   ./send-query.sh <api-key> <agent-id> <query> <conversation-id> (continua conversa - ⚠️ PERIGO!)
 #   ./send-query.sh <api-key> <agent-id> <query> <conv-id> <temp> [model]
+#
+# ⚠️  AVISO: Enviar query em conversa existente SALVA A MENSAGEM no histórico real.
+#    Só use com autorização explícita do usuário.
 
 API_KEY="${1:?Usage: $0 <api-key> <agent-id> <query> [conversation-id] [temperature] [model]}"
 AGENT_ID="${2:?Usage: $0 <api-key> <agent-id> <query> [conversation-id] [temperature] [model]}"
@@ -14,6 +17,14 @@ CONVERSATION_ID="${4:-}"
 TEMP="${5:-}"
 MODEL="${6:-}"
 BASE_URL="https://api.chatvolt.ai"
+
+# Safety check: warn if using existing conversation
+if [ -n "$CONVERSATION_ID" ]; then
+  echo "⚠️  ATENÇÃO: Enviando mensagem para conversa EXISTENTE: $CONVERSATION_ID" >&2
+  echo "   A mensagem será SALVA no histórico real do Chatvolt!" >&2
+  echo "   Pressione Ctrl+C para cancelar (5s)..." >&2
+  sleep 5
+fi
 
 # Build JSON body
 BODY=$(python3 -c "

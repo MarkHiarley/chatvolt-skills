@@ -13,12 +13,20 @@ Testa agentes Chatvolt. Você me diz **o que quer testar** e **quais regras o ag
 
 > **Pré-requisitos:** Chave de API do Chatvolt (https://app.chatvolt.ai/settings/api-keys)
 
+## ⚠️ REGRA CRÍTICA: NUNCA ENVIAR EM CONVERSA EXISTENTE ⚠️
+
+**NUNCA** envie queries em uma conversa existente (com `conversationId`) a menos que o usuário **explicitamente autorize e confirme**.
+
+Motivo: Mensagens enviadas via API são **salvas permanentemente no histórico real da conversa** no Chatvolt. O cliente real pode ver essas mensagens. Isso polui o histórico e causa confusão.
+
+**Sempre prefira criar uma nova conversa** (omitindo `conversationId`) para testes.
+
 ## Como funciona
 
 1. Você informa a **API key** e o **ID do agente**
 2. Me diz qual o **fluxo esperado** — as regras que o agente deve seguir (ex: "responder em português, se apresentar como suporte, nunca mencionar concorrentes")
-3. Podemos iniciar uma **nova conversa** ou continuar uma **conversa existente**
-4. Eu envio as perguntas que você definir, sempre na **mesma conversa**
+3. **SEMPRE** inicie uma **nova conversa** para testes (não reutilize conversas reais)
+4. Eu envio as perguntas que você definir, sempre na **mesma conversa de teste**
 5. Quando você quiser, analiso se as respostas estão seguindo as regras
 
 ## API usada

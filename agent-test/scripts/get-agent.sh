@@ -17,7 +17,6 @@ import json, sys
 
 data = json.load(sys.stdin)
 
-# Handle error
 if 'error' in data or 'message' in data:
     err = data.get('error') or data.get('message') or str(data)
     print(f'ERROR: {err}')
@@ -31,10 +30,10 @@ print(f'  Model:    {data.get(\"modelName\", \"N/A\")}')
 print(f'  Temp:     {data.get(\"temperature\", \"N/A\")}')
 print(f'  Visib:    {data.get(\"visibility\", \"N/A\")}')
 tools = data.get('tools', [])
-print(f'  Tools:    {len(tools)} ({", ".join(t.get(\"type\",\"?\") for t in tools)})')
+tool_types = ', '.join(t.get('type','?') for t in tools)
+print(f'  Tools:    {len(tools)} ({tool_types})')
 print('═══════════════════════════════════════════')
 
-# Show tools summary
 if tools:
     print()
     print('Tools:')
@@ -54,7 +53,6 @@ if tools:
         else:
             print(f'  - {ttype}: {tid}')
 
-# System prompt
 prompt = data.get('systemPrompt')
 print()
 if prompt:
@@ -64,4 +62,4 @@ if prompt:
     print('\"\"\"')
 else:
     print('System Prompt: (none)')
-" 2>&1
+"
