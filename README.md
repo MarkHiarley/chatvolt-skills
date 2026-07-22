@@ -179,9 +179,9 @@ $env:CHATVOLT_AGENT_ID = "cminahdll02m496hey09nozu8"
 
 ---
 
-## Conectando o pi com OpenCode (gratuito, sem login)
+## Conectando o pi com OpenCode
 
-O **opencode-pi** é uma extensão que registra o OpenCode como provedor no pi, usando modelos gratuitos sem precisar de API key ou login.
+O **opencode-pi** registra o OpenCode como provedor no pi. Você escolhe o modelo via `/model` e autentica via `/login`.
 
 ### 1. Instalar a extensão
 
@@ -196,45 +196,51 @@ Verifique:
 pi list
 ```
 
-### 2. Usar o modelo gratuito deepseek-v4-flash-free
+### 2. Autenticar (via pi, uma vez)
 
-Direto no terminal:
+Dentro do pi, rode:
+
+```
+/login
+```
+
+Selecione **OpenCode** como provedor. Pegue sua chave em https://opencode.ai/auth e cole quando o pi pedir.
+
+> Modelos gratuitos como `deepseek-v4-flash-free` também precisam desse login.
+
+### 3. Escolher o modelo
+
+Ainda dentro do pi:
+
+```
+/model
+```
+
+Escolha `opencode/deepseek-v4-flash-free` (ou outro modelo disponível).
+
+Também dá pra iniciar direto:
 ```bash
 pi --provider opencode-cli --model opencode/deepseek-v4-flash-free
 ```
 
-Teste rápido:
-```bash
-pi -p --provider opencode-cli --model opencode/deepseek-v4-flash-free "Reply with exactly OK"
-```
-
-### 3. Comandos úteis dentro do pi
+### 4. Comandos úteis
 
 ```
 /opencode-pi status    → status da extensão
 /opencode-pi models    → lista modelos disponíveis
-/opencode-pi test      → teste rápido
-/opencode-pi update    → atualiza lista de modelos (o OpenCode muda o roster com frequência)
+/opencode-pi update    → atualiza lista de modelos (o roster muda com frequência)
 /opencode-pi help      → ajuda
 ```
 
-### 4. Outros modelos gratuitos disponíveis
+### 5. Outros modelos gratuitos
 
 - `opencode/deepseek-v4-flash-free`
 - `opencode/mimo-v2.5-free`
 - `opencode/nemotron-3-super-free`
 - `opencode/big-pickle`
 
-### 5. Variável de ambiente (opcional)
-
-Para fixar modelos específicos:
-```bash
-export OPENCODE_PI_MODELS="opencode/deepseek-v4-flash-free,opencode/mimo-v2.5-free"
-pi
-```
-
 > Extensão: https://pi.dev/packages/opencode-pi
-> OpenCode: https://opencode.ai
+> Chave de API: https://opencode.ai/auth
 
 ---
 
