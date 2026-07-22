@@ -179,6 +179,65 @@ $env:CHATVOLT_AGENT_ID = "cminahdll02m496hey09nozu8"
 
 ---
 
+## Conectando o pi com OpenCode (gratuito, sem login)
+
+O **opencode-pi** é uma extensão que registra o OpenCode como provedor no pi, usando modelos gratuitos sem precisar de API key ou login.
+
+### 1. Instalar a extensão
+
+```bash
+pi install npm:opencode-pi
+```
+
+Depois rode `/reload` no pi (ou reinicie).
+
+Verifique:
+```bash
+pi list
+```
+
+### 2. Usar o modelo gratuito deepseek-v4-flash-free
+
+Direto no terminal:
+```bash
+pi --provider opencode-cli --model opencode/deepseek-v4-flash-free
+```
+
+Teste rápido:
+```bash
+pi -p --provider opencode-cli --model opencode/deepseek-v4-flash-free "Reply with exactly OK"
+```
+
+### 3. Comandos úteis dentro do pi
+
+```
+/opencode-pi status    → status da extensão
+/opencode-pi models    → lista modelos disponíveis
+/opencode-pi test      → teste rápido
+/opencode-pi update    → atualiza lista de modelos (o OpenCode muda o roster com frequência)
+/opencode-pi help      → ajuda
+```
+
+### 4. Outros modelos gratuitos disponíveis
+
+- `opencode/deepseek-v4-flash-free`
+- `opencode/mimo-v2.5-free`
+- `opencode/nemotron-3-super-free`
+- `opencode/big-pickle`
+
+### 5. Variável de ambiente (opcional)
+
+Para fixar modelos específicos:
+```bash
+export OPENCODE_PI_MODELS="opencode/deepseek-v4-flash-free,opencode/mimo-v2.5-free"
+pi
+```
+
+> Extensão: https://pi.dev/packages/opencode-pi
+> OpenCode: https://opencode.ai
+
+---
+
 ## Uso direto pelo terminal (sem o pi)
 
 Cada skill tem scripts independentes em `scripts/`. Funcionam em qualquer sistema com `bash` e `curl` (no Windows use Git Bash ou WSL).
