@@ -26,6 +26,8 @@ Ajusta agentes Chatvolt. Você me diz **o que quer mudar** — prompt, modelo ou
 
 ## Exemplos de modelos disponíveis
 
+A lista oficial vem de `GET /agents/models` (use `list-models.sh`).
+
 `gpt_4_o`, `gpt_41`, `gpt_41_mini`, `gpt_o3_mini`, `gpt_o4_mini`, `gemini_flash`, `gemini_pro`, `claude_3_haiku`, `claude_3_sonnet`, `claude_sonnet`, `deepseek_v3`, `deepseek_r1`, `sabia_3`, `llama_4_scout`, `llama_4_maverick`, `grok_3`, `grok_3_mini`, `qwen_max`, `mistral_large`, `command_a` e outros.
 
 ## API usada
@@ -35,6 +37,8 @@ Ajusta agentes Chatvolt. Você me diz **o que quer mudar** — prompt, modelo ou
 | `GET` | `/agents/{id}` | Obter detalhes do agente |
 | `PATCH` | `/agents/{id}` | Atualizar configuração do agente |
 | `POST` | `/agents/{id}/query` | Enviar query de teste |
+| `GET` | `/agents/models` | Listar modelos disponiveis |
+| `POST` | `/agents/{id}/webhook` | Configurar webhook do agente |
 | `GET` | `/agents/{id}/tools` | Listar ferramentas do agente |
 
 Base URL: `https://api.chatvolt.ai`
@@ -57,5 +61,7 @@ Na pasta `scripts/` tem utilitários que posso usar quando necessário:
 - `update-prompt.sh <api-key> <agent-id> "<prompt>"` — atualiza prompt
 - `update-model.sh <api-key> <agent-id> <modelo>` — troca modelo
 - `update-temperature.sh <api-key> <agent-id> <valor>` — ajusta temperatura
+- `list-models.sh <api-key>` — lista modelos disponíveis
+- `set-webhook.sh <api-key> <agent-id> '<json>'` — configura webhook
 - `test-query.sh <api-key> <agent-id> <query> [temp] [modelo]` — testa
 - `adjust.sh <api-key> <agent-id> <query>` — fluxo interativo

@@ -10,6 +10,7 @@ Skills para o **pi** (agente de IA) que permitem gerenciar, testar e ajustar age
 | **investigation** | Investiga: busca system prompt, conversas, mensagens e analise de conformidade |
 | **prompt-adjust** | Ajusta: edita prompt, troca modelo, altera temperatura |
 | **tools-update** | Gerencia tools: cria, lista, atualiza e deleta (datastore, HTTP, form) |
+| **conversation-cleanup** | Lista e deleta conversas de teste (canal `api`) |
 
 ---
 
@@ -74,6 +75,7 @@ ln -s "$(pwd)/agent-test" ~/.pi/agent/skills/
 ln -s "$(pwd)/investigation" ~/.pi/agent/skills/
 ln -s "$(pwd)/prompt-adjust" ~/.pi/agent/skills/
 ln -s "$(pwd)/tools-update" ~/.pi/agent/skills/
+ln -s "$(pwd)/conversation-cleanup" ~/.pi/agent/skills/
 ```
 
 Ou use o instalador automatico:
@@ -86,7 +88,7 @@ Ou use o instalador automatico:
 
 ```bash
 mkdir -p ~/.pi/agent/skills
-cp -r agent-test investigation prompt-adjust tools-update ~/.pi/agent/skills/
+cp -r agent-test investigation prompt-adjust tools-update conversation-cleanup ~/.pi/agent/skills/
 ```
 
 ```bash
@@ -338,6 +340,11 @@ Voce: sim, city (obrigatorio, preenchido pelo usuario)
 | `GET` | `/agents/{id}` | investigation, prompt-adjust, agent-test |
 | `PATCH` | `/agents/{id}` | prompt-adjust |
 | `POST` | `/agents/{id}/query` | investigation, agent-test |
+| `PATCH` | `/agents/{id}` | prompt-adjust |
+| `GET` | `/agents/models` | prompt-adjust |
+| `POST` | `/agents/{id}/webhook` | prompt-adjust |
+| `GET` | `/conversation?organizationId={id}` | conversation-cleanup |
+| `DELETE` | `/conversation/{id}` | conversation-cleanup |
 | `GET` | `/api/agents/{id}/tools` | tools-update |
 | `POST` | `/api/agents/{id}/tools` | tools-update |
 | `PATCH` | `/api/agents/{id}/tools/{toolId}` | tools-update |

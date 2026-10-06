@@ -35,12 +35,14 @@ if [[ "$(uname -s)" =~ MINGW|MSYS|CYGWIN ]]; then
   echo "   New-Item -ItemType Junction -Path \"\$env:USERPROFILE\.pi\agent\skills\investigation\" -Target \"$REPO_DIR\investigation\""
   echo "   New-Item -ItemType Junction -Path \"\$env:USERPROFILE\.pi\agent\skills\prompt-adjust\" -Target \"$REPO_DIR\prompt-adjust\""
   echo "   New-Item -ItemType Junction -Path \"\$env:USERPROFILE\.pi\agent\skills\tools-update\" -Target \"$REPO_DIR\tools-update\""
+  echo "   New-Item -ItemType Junction -Path \"\$env:USERPROFILE\.pi\agent\skills\conversation-cleanup\" -Target \"$REPO_DIR\conversation-cleanup\""
   echo ""
   echo "   Ou copie as pastas (não precisa de admin):"
   echo "   Copy-Item -Recurse -Force \"$REPO_DIR\agent-test\" \"\$env:USERPROFILE\.pi\agent\skills\""
   echo "   Copy-Item -Recurse -Force \"$REPO_DIR\investigation\" \"\$env:USERPROFILE\.pi\agent\skills\""
   echo "   Copy-Item -Recurse -Force \"$REPO_DIR\prompt-adjust\" \"\$env:USERPROFILE\.pi\agent\skills\""
   echo "   Copy-Item -Recurse -Force \"$REPO_DIR\tools-update\" \"\$env:USERPROFILE\.pi\agent\skills\""
+  echo "   Copy-Item -Recurse -Force \"$REPO_DIR\conversation-cleanup\" \"\$env:USERPROFILE\.pi\agent\skills\""
   echo ""
   exit 0
 fi
@@ -51,7 +53,7 @@ case "$MODE" in
     echo "Modo: link simbólico (recomendado)"
     echo "  → alterações no repo refletem automaticamente no pi"
     echo ""
-    for skill in agent-test investigation prompt-adjust tools-update; do
+    for skill in agent-test investigation prompt-adjust tools-update conversation-cleanup; do
       target="$PI_SKILLS_DIR/$skill"
       [ -L "$target" ] && rm "$target"
       [ -d "$target" ] && rm -rf "$target"
@@ -63,7 +65,7 @@ case "$MODE" in
     echo "Modo: cópia"
     echo "  → skills independentes do repo"
     echo ""
-    for skill in agent-test investigation prompt-adjust tools-update; do
+    for skill in agent-test investigation prompt-adjust tools-update conversation-cleanup; do
       target="$PI_SKILLS_DIR/$skill"
       [ -d "$target" ] && rm -rf "$target"
       cp -r "$REPO_DIR/$skill" "$target"
