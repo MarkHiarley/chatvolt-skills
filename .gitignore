@@ -3,3 +3,6 @@
 *.tmp
 *.swp
 .DS_Store
+
+# Probe local (saida crua da API)
+tests/probe/
