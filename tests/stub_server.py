@@ -10,6 +10,7 @@ Uso: python3 tests/stub_server.py [porta]   (porta 0 = escolhe uma livre e impri
 """
 
 import json
+import os
 import re
 import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -17,6 +18,47 @@ from urllib.parse import parse_qs, urlparse
 
 STUB_KEY = "stub-key"
 _flaky_hits = {"n": 0}
+
+# ── Fixtures por skill ────────────────────────────────────────────────────
+# Cada arquivo tests/stub-fixtures/<skill>.json pode declarar:
+#   { "routes": [ {"method":"GET","path":"/contacts","query":{"limit":"1"},
+#                  "status":200,"body":{...}} | {"raw":"texto puro"} ],
+#     "smoke":  [ {"desc":"...","cmd":"...","expect_out":"...","expect_exit":0} ],
+#     "live":   [ {"desc":"...","cmd":"..."} ] }
+# As rotas de fixture têm precedência sobre as rotas embutidas abaixo.
+FIXTURES = []
+FIXTURE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "stub-fixtures")
+
+
+def load_fixtures():
+    if not os.path.isdir(FIXTURE_DIR):
+        return
+    for name in sorted(os.listdir(FIXTURE_DIR)):
+        if not name.endswith(".json"):
+            continue
+        with open(os.path.join(FIXTURE_DIR, name), encoding="utf-8") as fh:
+            data = json.load(fh)
+        for route in data.get("routes", []):
+            route["_file"] = name
+            FIXTURES.append(route)
+
+
+def fixture_match(method, path, query):
+    """Melhor candidato vence: rota com mais restrições de query e caminho mais
+    longo. Evita que uma fixture genérica (ex.: api-call) capture a rota de uma
+    skill específica só por ter sido carregada antes."""
+    best, best_score = None, None
+    for index, route in enumerate(FIXTURES):
+        if route.get("method", "").upper() != method or route.get("path") != path:
+            continue
+        expected = route.get("query") or {}
+        if expected and any(query.get(k) != v for k, v in expected.items()):
+            continue
+        score = (len(expected), len(route["path"]), -index)
+        if best_score is None or score > best_score:
+            best, best_score = route, score
+    return best
+
 
 AGENT = {
     "id": "agent-1",
@@ -191,6 +233,18 @@ class Handler(BaseHTTPRequestHandler):
         header = self.headers.get("Authorization") or ""
         return header == f"Bearer {STUB_KEY}"
 
+    def _fixture(self, method):
+        """Responde pela fixture, se houver. True = já respondeu."""
+        path, qs = self._path_query()
+        route = fixture_match(method, path, qs)
+        if not route:
+            return False
+        if "raw" in route:
+            self._send(route.get("status", 200), None, raw_text=route["raw"])
+        else:
+            self._send(route.get("status", 200), route.get("body"))
+        return True
+
     def _path_query(self):
         u = urlparse(self.path)
         return u.path, {k: v[-1] for k, v in parse_qs(u.query).items()}
@@ -219,6 +273,9 @@ class Handler(BaseHTTPRequestHandler):
 
         if not self._authorized():
             self._send(403, {"error": "Forbidden"})
+            return
+
+        if self._fixture("GET"):
             return
 
         if path == "/agents/models":
@@ -288,6 +345,9 @@ class Handler(BaseHTTPRequestHandler):
             self._send(403, {"error": "Forbidden"})
             return
 
+        if self._fixture("POST"):
+            return
+
         if re.fullmatch(r"/agents/[^/]+/query", path):
             self._send(200, {"answer": "PONG-STUB", "sources": [], "messageId": "m-9", "conversationId": "conv-nova-1", "visitorId": "v-1"})
         elif re.fullmatch(r"/agents/[^/]+/tools", path):
@@ -343,6 +403,9 @@ class Handler(BaseHTTPRequestHandler):
         if not self._authorized():
             self._send(403, {"error": "Forbidden"})
             return
+        if self._fixture("PATCH"):
+            return
+
         if re.fullmatch(r"/agents/[^/]+", path):
             self._send(200, {**AGENT, **body})
         elif re.fullmatch(r"/agents/[^/]+/webhook", path):
@@ -358,11 +421,41 @@ class Handler(BaseHTTPRequestHandler):
         else:
             self._send(404, {"error": "NOT_FOUND"})
 
+    def do_PUT(self):
+        path, _ = self._path_query()
+        body = self._body()
+        if not self._authorized():
+            self._send(403, {"error": "Forbidden"})
+            return
+        if self._fixture("PUT"):
+            return
+        # rotas PUT conhecidas: devolve o objeto atualizado na raiz
+        patterns = [
+            r"/artifacts/[^/]+",
+            r"/artifact-categories/[^/]+",
+            r"/conversations/[^/]+/notes/[^/]+",
+            r"/contacts/variables",
+            r"/crm/scenario",
+            r"/crm/step",
+            r"/crm/conversationLog/[^/]+",
+            r"/dispatches/contacts/lists",
+        ]
+        if any(re.fullmatch(pt, path) for pt in patterns):
+            payload = dict(body) if isinstance(body, dict) else {}
+            payload.setdefault("id", path.rsplit("/", 1)[-1] if path.rsplit("/", 1)[-1] != "variables" else "var-1")
+            payload.setdefault("updatedAt", "2026-10-12T12:00:00.000Z")
+            self._send(200, payload)
+            return
+        self._send(404, {"error": "NOT_FOUND"})
+
     def do_DELETE(self):
         path, _ = self._path_query()
         if not self._authorized():
             self._send(403, {"error": "Forbidden"})
             return
+        if self._fixture("DELETE"):
+            return
+
         if re.fullmatch(r"/conversation/[^/]+", path):
             conv_id = path.rsplit("/", 1)[-1]
             channel = next((c["channel"] for c in CONVERSATIONS if c["id"] == conv_id), "api")
@@ -384,6 +477,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
+    load_fixtures()
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 0
     server = HTTPServer(("127.0.0.1", port), Handler)
     print(server.server_address[1], flush=True)

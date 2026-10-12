@@ -43,7 +43,7 @@ bad()  { FAIL=$((FAIL + 1)); printf '  \033[31mFAIL\033[0m %s\n' "$1"; }
 skip() { SKIP=$((SKIP + 1)); printf '  \033[33mSKIP\033[0m %s\n' "$1"; }
 head_() { printf '\n\033[1m== %s\033[0m\n' "$1"; }
 
-SKILLS=(agent-test investigation prompt-adjust tools-update conversation-cleanup datastore-add datastore-tags)
+SKILLS=(agent-test investigation prompt-adjust tools-update conversation-cleanup datastore-add datastore-tags api-call contacts conversation-actions agent-admin artifacts crm dispatches whatsapp integrations tags mercadolivre)
 
 # ── Lint ─────────────────────────────────────────────────────────────────
 lint() {
@@ -84,6 +84,30 @@ lint() {
     if [ -z "$hits" ]; then ok "sem ocorrências de /$pattern/"; else bad "padrão proibido /$pattern/: $(echo "$hits" | head -3)"; fi
   done
 
+  head_ "lint: fixtures declaradas corretamente"
+  local fx
+  for fx in tests/stub-fixtures/*.json; do
+    [ -f "$fx" ] || continue
+    if python3 - "$fx" <<'PYEOF'
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+problemas = []
+for phase in ("routes", "smoke", "live"):
+    for item in d.get(phase) or []:
+        cmd = item.get("cmd", "")
+        if "\n" in cmd:
+            problemas.append(f"{phase}: comando com quebra de linha ({item.get('desc') or item.get('path')})")
+        if "cmd" in item and not cmd:
+            problemas.append(f"{phase}: cmd vazio ({item.get('desc')})")
+for route in d.get("routes") or []:
+    if "method" not in route or "path" not in route:
+        problemas.append(f"routes: falta method/path ({route})")
+if problemas:
+    print("\n".join(problemas)); raise SystemExit(1)
+PYEOF
+    then ok "fixture $(basename "$fx") válida"; else bad "fixture $fx inválida (quebras de linha ou campos faltando)"; fi
+  done
+
   head_ "lint: endpoints usados existem no contrato"
   local ep
   for ep in '/api/agents' '/conversations?' '/agents/create' '/agents/models/' ; do
@@ -95,17 +119,30 @@ lint() {
 # ── Stub offline ─────────────────────────────────────────────────────────
 STUB_PID=""
 STUB_PORT=""
+STUB_PORT_FILE=""
 stub_start() {
-  python3 tests/stub_server.py 0 > /tmp/cv-stub.port 2>/dev/null &
+  STUB_PORT_FILE="/tmp/cv-stub-$$.port"
+  rm -f "$STUB_PORT_FILE"
+  python3 tests/stub_server.py 0 > "$STUB_PORT_FILE" 2>/tmp/cv-stub-$$.err &
   STUB_PID=$!
-  for _ in $(seq 1 50); do
-    STUB_PORT=$(cat /tmp/cv-stub.port 2>/dev/null || true)
-    [ -n "$STUB_PORT" ] && break
+  local i
+  for i in $(seq 1 60); do
+    STUB_PORT=$(cat "$STUB_PORT_FILE" 2>/dev/null || true)
+    if [ -n "$STUB_PORT" ] && curl -s -o /dev/null --max-time 2 "http://127.0.0.1:${STUB_PORT}/agents/models"; then
+      return 0
+    fi
+    kill -0 "$STUB_PID" 2>/dev/null || break
     sleep 0.1
   done
-  [ -n "$STUB_PORT" ] || { echo "não consegui subir o stub" >&2; exit 1; }
+  echo "não consegui subir o stub em 127.0.0.1 (porta lida: '${STUB_PORT}')" >&2
+  sed -n '1,20p' "/tmp/cv-stub-$$.err" >&2 || true
+  exit 1
 }
-stub_stop() { [ -n "$STUB_PID" ] && kill "$STUB_PID" 2>/dev/null; wait "$STUB_PID" 2>/dev/null; }
+stub_stop() {
+  [ -n "$STUB_PID" ] && kill "$STUB_PID" 2>/dev/null
+  wait "$STUB_PID" 2>/dev/null
+  rm -f "$STUB_PORT_FILE"
+}
 
 # assert_run <descrição> <texto esperado> <exit esperado> <cmd...>
 assert_run() {
@@ -120,7 +157,7 @@ assert_run() {
   rc=$?
   if [ "$rc" = "124" ]; then bad "$desc (timeout de ${CV_TEST_TIMEOUT:-30}s — comando travou)"; return 1; fi
   if [ "$rc" != "$want_exit" ]; then bad "$desc (exit=$rc, esperado $want_exit): $(printf '%s' "$out" | head -2 | tr '\n' ' ')"; return 1; fi
-  if [ -n "$want_out" ] && ! printf '%s' "$out" | grep -qF "$want_out"; then bad "$desc (saída sem '$want_out'): $(printf '%s' "$out" | head -2 | tr '\n' ' ')"; return 1; fi
+  if [ -n "$want_out" ] && ! printf '%s' "$out" | grep -qF -- "$want_out"; then bad "$desc (saída sem '$want_out'): $(printf '%s' "$out" | head -2 | tr '\n' ' ')"; return 1; fi
   ok "$desc"
   return 0
 }
@@ -155,11 +192,37 @@ stub_tests() {
   assert_run "tools-update/delete-tool.sh" "" 0 ./tools-update/scripts/delete-tool.sh "$K" agent-1 tool-1
   assert_run "tools-update/update-tool.sh" "" 0 ./tools-update/scripts/update-tool.sh "$K" agent-1 tool-2 '{"type":"datastore","datastoreId":"ds-1"}'
 
+  fixture_cases stub
+
   head_ "stub: erros (key inválida, quota, rate limit, guarda de conversa)"
   assert_run "key inválida -> exit 1" "não autorizado" 1 ./agent-test/scripts/get-agent.sh "key-errada" agent-1
   assert_run "quota 402 -> exit 3" "" 3 ./datastore-add/scripts/query-base.sh "$K" quota-me "x"
   assert_run "429 com retry -> exit 0" "PASS" 0 bash -c 'out=$(./tools-update/scripts/list-tools.sh stub-key flaky); printf "%s" "$out" | grep -q consultar_status && echo PASS'
   assert_run "conversa existente sem --force -> exit 2" "" 2 ./agent-test/scripts/send-query.sh "$K" agent-1 "oi" --conversation conv-api-1
+}
+
+
+# ── Casos declarados pelas skills em tests/stub-fixtures/<skill>.json ─────
+# stub: rodam contra o stub local (CV_API_BASE). live: exigem CHATVOLT_API_KEY.
+fixture_cases() {
+  local phase="$1" f desc cmd want_out want_exit
+  local key="smoke"; [ "$phase" = "live" ] && key="live"
+  for f in tests/stub-fixtures/*.json; do
+    [ -f "$f" ] || continue
+    local cases
+    cases=$(python3 -c '
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+for c in d.get(sys.argv[2]) or []:
+    print("\x1f".join([c.get("desc", ""), c.get("cmd", ""), c.get("expect_out", ""), str(c.get("expect_exit", 0))]))
+' "$f" "$key" 2>/dev/null) || continue
+    [ -n "$cases" ] || continue
+    head_ "fixtures ($phase): $(basename "$f" .json)"
+    while IFS=$'\x1f' read -r desc cmd want_out want_exit; do
+      [ -n "$cmd" ] || continue
+      assert_run "$desc" "$want_out" "${want_exit:-0}" bash -c "$cmd"
+    done <<< "$cases"
+  done
 }
 
 # ── Live ─────────────────────────────────────────────────────────────────
@@ -193,6 +256,10 @@ print("PASS")'
 live_tests() {
   local K="$SAVED_KEY" A="$SAVED_AGENT" DS="$SAVED_DATASTORE" CV="$SAVED_CONVERSATION"
   head_ "live: leituras reais"
+  # A fase offline limpa o ambiente; devolvemos as credenciais capturadas na largada
+  # para os casos `live` das fixtures (que usam $CHATVOLT_*).
+  export CHATVOLT_API_KEY="$SAVED_KEY" CHATVOLT_AGENT_ID="$SAVED_AGENT"
+  export CHATVOLT_DATASTORE_ID="$SAVED_DATASTORE" CHATVOLT_CONVERSATION_ID="$SAVED_CONVERSATION"
   if [ -z "$K" ] || [ -z "$A" ]; then
     skip "CHATVOLT_API_KEY/CHATVOLT_AGENT_ID não definidos — pulando live"
     return 0
@@ -210,6 +277,7 @@ live_tests() {
   else
     skip "datastore-add/datastore-tags live (defina CHATVOLT_DATASTORE_ID)"
   fi
+  fixture_cases live
 }
 
 # ── Live mutante (recursos descartáveis OMP-SMOKE-*) ─────────────────────
