@@ -1,182 +1,154 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Chatvolt Interactive Tools Manager
-# Usage: ./manage-tools.sh <api-key> <agent-id>
+# chatvolt tools-update — manage-tools.sh
+# Menu interativo para listar, ver, criar, atualizar, deletar e exportar as
+# tools de um agente. Apenas orquestra os outros scripts desta skill.
 
-API_KEY="${1:?Usage: $0 <api-key> <agent-id>}"
-AGENT_ID="${2:?Usage: $0 <api-key> <agent-id>}"
-BASE_URL="https://api.chatvolt.ai"
+usage() {
+  cat <<'EOF'
+Uso: manage-tools.sh <api-key> <agent-id>
+
+Menu interativo de gerenciamento das tools de um agente:
+  1) Listar tools        4) Atualizar tool
+  2) Ver uma tool        5) Deletar tool
+  3) Criar tool          6) Exportar tools (JSON)
+                         7) Sair
+
+Opções:
+  -h, --help   Mostra esta ajuda.
+
+Ambiente:
+  CHATVOLT_API_KEY    API key (alternativa ao 1º argumento)
+  CHATVOLT_AGENT_ID   id do agente (alternativa ao 2º argumento)
+  CV_API_BASE         sobrescreve a base URL (stub de teste)
+
+Exit codes: 0 ok · 1 erro · 3 quota · 4 rede · 5 servidor · 130 cancelado.
+
+Exemplo:
+  manage-tools.sh "$KEY" cmt8mfhzv00h2g9gtypyp54l1
+EOF
+}
+
+case "${1:-}" in
+  -h|--help) usage; exit 0 ;;
+esac
+
+source "$(dirname "$0")/_lib.sh"
+
+API_KEY=$(cv_req_key "${1:-}")
+AGENT_ID="${2:-${CHATVOLT_AGENT_ID:-}}"
+[ -n "$AGENT_ID" ] || cv_die "informe o agent-id como 2º argumento ou exporte CHATVOLT_AGENT_ID"
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-NC='\033[0m' # No Color
-
-echo -e "${CYAN}╔══════════════════════════════════════╗${NC}"
-echo -e "${CYAN}║   Chatvolt Tools Manager             ║${NC}"
-echo -e "${CYAN}╚══════════════════════════════════════╝${NC}"
-echo "Agent: ${AGENT_ID}"
-echo ""
-
-# Get agent name
-AGENT_NAME=$(curl -s "${BASE_URL}/agents/${AGENT_ID}" \
-  -H "Authorization: Bearer ${API_KEY}" \
-  -H "Content-Type: application/json" | python3 -c "
+AGENT_NAME=$(cv_get "/agents/${AGENT_ID}" && printf '%s' "$CV_RESP" | python3 -c '
 import json, sys
 try:
-    data = json.load(sys.stdin)
-    print(data.get('name', 'N/A'))
-except:
-    print('N/A')
-" 2>/dev/null || echo "N/A")
-echo -e "${GREEN}Agent: ${AGENT_NAME}${NC}"
-echo ""
+    d = json.load(sys.stdin)
+except Exception:
+    print("N/A"); raise SystemExit
+if isinstance(d, dict) and "data" in d and "error" not in d:
+    d = d["data"]
+print(d.get("name", "N/A") if isinstance(d, dict) else "N/A")
+' || echo "N/A")
 
-main_menu() {
-  while true; do
-    echo -e "${BLUE}══════════════════════════════════════${NC}"
-    echo -e "${YELLOW}  1)${NC} List all tools"
-    echo -e "${YELLOW}  2)${NC} View tool details"
-    echo -e "${YELLOW}  3)${NC} Create a tool"
-    echo -e "${YELLOW}  4)${NC} Update a tool"
-    echo -e "${YELLOW}  5)${NC} Delete a tool"
-    echo -e "${YELLOW}  6)${NC} Export all tools to JSON"
-    echo -e "${YELLOW}  7)${NC} Exit"
-    echo -e "${BLUE}══════════════════════════════════════${NC}"
-    read -r -p "Choose option [1-7]: " OPTION
+pause() { read -r -p "Pressione Enter para continuar..." _ || true; }
 
-    case "$OPTION" in
-      1) list_tools ;;
-      2) view_tool ;;
-      3) create_tool_menu ;;
-      4) update_tool_menu ;;
-      5) delete_tool_menu ;;
-      6) export_tools ;;
-      7) echo "Bye!"; exit 0 ;;
-      *) echo -e "${RED}Invalid option${NC}" ;;
-    esac
-    echo ""
-  done
+# Executa um script filho sem abortar o menu em caso de erro (set -e).
+run_child() { "$@" || cv_warn "o script retornou erro (exit $?); o menu continua"; }
+
+menu_list() {
+  echo
+  run_child "${SCRIPT_DIR}/list-tools.sh" "$API_KEY" "$AGENT_ID"
 }
 
-list_tools() {
-  echo ""
-  echo -e "${CYAN}─── Tools ───${NC}"
-  "${SCRIPT_DIR}/list-tools.sh" "$API_KEY" "$AGENT_ID"
-  echo ""
-  read -r -p "Press Enter to continue..."
+menu_view() {
+  echo
+  read -r -p "Tool ID: " TID || return 0
+  [ -n "$TID" ] || { cv_warn "id vazio"; return 0; }
+  run_child "${SCRIPT_DIR}/list-tools.sh" "$API_KEY" "$AGENT_ID" --id "$TID" --full
 }
 
-view_tool() {
-  echo ""
-  read -r -p "Tool ID: " TOOL_ID
-  if [ -z "$TOOL_ID" ]; then
-    echo -e "${RED}No tool ID provided${NC}"
-    return
-  fi
-  echo ""
-  "${SCRIPT_DIR}/get-tool.sh" "$API_KEY" "$AGENT_ID" "$TOOL_ID"
-  echo ""
-  read -r -p "Press Enter to continue..."
-}
-
-create_tool_menu() {
-  echo ""
-  echo -e "${CYAN}─── Create Tool ───${NC}"
-  echo "1) Datastore tool"
-  echo "2) HTTP tool"
-  echo "3) Form tool"
-  echo "4) Cancel"
-  read -r -p "Choose type [1-4]: " TYPE
-
-  case "$TYPE" in
+menu_create() {
+  echo
+  echo "Tipos:"
+  echo "  1) datastore   2) http   3) http-raw   4) form   5) outro (JSON)"
+  read -r -p "Escolha o tipo [1-5]: " OPT || return 0
+  case "$OPT" in
     1)
-      read -r -p "Datastore ID: " DS_ID
-      if [ -n "$DS_ID" ]; then
-        "${SCRIPT_DIR}/create-tool.sh" "$API_KEY" "$AGENT_ID" datastore "$DS_ID"
-      fi
+      read -r -p "Datastore ID: " V || return 0
+      [ -n "$V" ] && run_child "${SCRIPT_DIR}/create-tool.sh" "$API_KEY" "$AGENT_ID" datastore "$V"
       ;;
-    2)
-      echo "Enter HTTP tool configuration as JSON."
-      echo "Press Ctrl+D (or type END on a new line) when done."
-      echo "Example:"
-      echo '{"config":{"name":"My API","description":"Description","url":"https://api.example.com","method":"GET"}}'
-      echo "---"
-      JSON=$(cat)
-      if [ -n "$JSON" ]; then
-        "${SCRIPT_DIR}/create-tool.sh" "$API_KEY" "$AGENT_ID" http "$JSON"
-      fi
+    2|3)
+      local t="http"; [ "$OPT" = "3" ] && t="http-raw"
+      echo "Cole o JSON do corpo (ex.: {\"config\":{\"name\":\"...\",\"description\":\"...\",\"url\":\"...\",\"method\":\"GET\"}})."
+      echo "Termine com Ctrl-D:"
+      local JSON; JSON=$(cat) || true
+      [ -n "$JSON" ] && run_child "${SCRIPT_DIR}/create-tool.sh" "$API_KEY" "$AGENT_ID" "$t" "$JSON"
       ;;
-    3)
-      read -r -p "Form ID: " FORM_ID
-      if [ -n "$FORM_ID" ]; then
-        "${SCRIPT_DIR}/create-tool.sh" "$API_KEY" "$AGENT_ID" form "$FORM_ID"
-      fi
+    4)
+      read -r -p "Form ID: " V || return 0
+      [ -n "$V" ] && run_child "${SCRIPT_DIR}/create-tool.sh" "$API_KEY" "$AGENT_ID" form "$V"
       ;;
-    4) return ;;
-    *) echo -e "${RED}Invalid option${NC}" ;;
+    5)
+      read -r -p "Tipo (ex.: quick_reply_buttons, request_human...): " T || return 0
+      [ -n "$T" ] || return 0
+      echo "Cole o JSON do corpo completo. Termine com Ctrl-D:"
+      local JSON; JSON=$(cat) || true
+      [ -n "$JSON" ] && run_child "${SCRIPT_DIR}/create-tool.sh" "$API_KEY" "$AGENT_ID" "$T" "$JSON"
+      ;;
+    *) cv_warn "opção inválida" ;;
   esac
-  echo ""
-  read -r -p "Press Enter to continue..."
 }
 
-update_tool_menu() {
-  echo ""
-  read -r -p "Tool ID to update: " TOOL_ID
-  if [ -z "$TOOL_ID" ]; then
-    echo -e "${RED}No tool ID provided${NC}"
-    return
-  fi
-
-  echo ""
-  echo -e "${CYAN}─── Update Tool ───${NC}"
-  echo "Enter the updated tool configuration as JSON."
-  echo "Press Ctrl+D (or type END on a new line) when done."
-  echo "Tip: run option 2 first to see current config."
-  echo "---"
-  JSON=$(cat)
-  if [ -n "$JSON" ]; then
-    "${SCRIPT_DIR}/update-tool.sh" "$API_KEY" "$AGENT_ID" "$TOOL_ID" "$JSON"
-  fi
-  echo ""
-  read -r -p "Press Enter to continue..."
+menu_update() {
+  echo
+  read -r -p "Tool ID a atualizar: " TID || return 0
+  [ -n "$TID" ] || { cv_warn "id vazio"; return 0; }
+  echo "Cole o JSON do corpo (o 'type' é injetado do estado atual se ausente). Termine com Ctrl-D:"
+  local JSON; JSON=$(cat) || true
+  [ -n "$JSON" ] && run_child "${SCRIPT_DIR}/update-tool.sh" "$API_KEY" "$AGENT_ID" "$TID" "$JSON"
 }
 
-delete_tool_menu() {
-  echo ""
-  read -r -p "Tool ID to delete: " TOOL_ID
-  if [ -z "$TOOL_ID" ]; then
-    echo -e "${RED}No tool ID provided${NC}"
-    return
-  fi
-  "${SCRIPT_DIR}/delete-tool.sh" "$API_KEY" "$AGENT_ID" "$TOOL_ID"
-  echo ""
-  read -r -p "Press Enter to continue..."
+menu_delete() {
+  echo
+  read -r -p "Tool ID a deletar: " TID || return 0
+  [ -n "$TID" ] || { cv_warn "id vazio"; return 0; }
+  run_child "${SCRIPT_DIR}/delete-tool.sh" "$API_KEY" "$AGENT_ID" "$TID"
 }
 
-export_tools() {
-  echo ""
-  OUTFILE="chatvolt-tools-${AGENT_ID}-$(date +%Y%m%d-%H%M%S).json"
-  echo "Exporting all tools to ${OUTFILE} ..."
-
-  curl -s "${BASE_URL}/api/agents/${AGENT_ID}/tools" \
-    -H "Authorization: Bearer ${API_KEY}" \
-    -H "Content-Type: application/json" | python3 -m json.tool > "$OUTFILE" 2>/dev/null
-
-  if [ -s "$OUTFILE" ]; then
-    COUNT=$(python3 -c "import json; data=json.load(open('$OUTFILE')); print(len(data) if isinstance(data, list) else 0)")
-    echo -e "${GREEN}✅ Exported ${COUNT} tool(s) to ${OUTFILE}${NC}"
-  else
-    echo -e "${RED}Failed to export tools${NC}"
-    rm -f "$OUTFILE"
+menu_export() {
+  echo
+  local out="chatvolt-tools-${AGENT_ID}-$(date +%Y%m%d-%H%M%S).json"
+  if ! "${SCRIPT_DIR}/list-tools.sh" "$API_KEY" "$AGENT_ID" --full > "$out"; then
+    cv_warn "falha ao exportar"; rm -f "$out"; return 0
   fi
-  echo ""
-  read -r -p "Press Enter to continue..."
+  local n
+  n=$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(len(d) if isinstance(d, list) else 0)' "$out")
+  cv_info "✅ ${n} tool(s) exportada(s) para ${out}"
 }
 
-main_menu
+echo "══════════════════════════════════════════"
+echo "  Chatvolt Tools Manager"
+echo "  Agente: ${AGENT_ID} (${AGENT_NAME})"
+echo "══════════════════════════════════════════"
+
+while :; do
+  echo
+  echo "  1) Listar tools         4) Atualizar tool"
+  echo "  2) Ver uma tool         5) Deletar tool"
+  echo "  3) Criar tool           6) Exportar tools (JSON)"
+  echo "                          7) Sair"
+  read -r -p "Escolha [1-7]: " OPTION || { echo; break; }
+  case "$OPTION" in
+    1) menu_list; pause ;;
+    2) menu_view; pause ;;
+    3) menu_create; pause ;;
+    4) menu_update; pause ;;
+    5) menu_delete; pause ;;
+    6) menu_export; pause ;;
+    7|"") echo "Até logo."; break ;;
+    *) cv_warn "opção inválida" ;;
+  esac
+done
