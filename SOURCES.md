@@ -121,6 +121,48 @@ Fluxo válido, executado ao vivo em bases descartáveis (`OMP-*-PROBE`) que fora
 - Nunca interpolar valores em código Python por string; construir payloads com `python3 - "$arg"` + `sys.argv`.
 - Toda operação destrutiva (delete, PATCH de prompt, upsert que reescreve texto) exige confirmação (`CV_YES=1` para pular em teste).
 
-## 6. Fora de escopo (não coberto por nenhum skill)
+## 6. Cobertura: o que a API expõe e o que está acessível
 
-`contacts`, `dispatches`, `artifacts`, `forms`, `whatsapp/*`, `crm/*`, `tags` de conversa/contato (`/tags` responde **404** nesta organização) e `agent-blacklist`/`agent-whitelist-whatsapp` (404 no probe).
+`openapi.yaml` publicado: **136 operações em 87 paths / 23 grupos**. Índice completo em
+`api-call/data/endpoints.json` (`api-call/scripts/catalog.sh`), com a disponibilidade medida ao vivo.
+
+Disponibilidade verificada (2026-10-12, plano/organização de teste):
+
+| Rota | Estado |
+|---|---|
+| `/agents*`, `/agents/{id}/tools*`, `/agents/models` | disponível |
+| `/agent-whitelist-whatsapp/{id}` | disponível |
+| `GET /contacts` | disponível: `{contacts:[…], count, hasMore, nextCursor}` — paginação por **cursor** (`<dataISO>_<id>`), filtros `--search`, `--has-email` etc. |
+| `/contacts/variables`, `DELETE /contacts/{id}` | disponível (variáveis exigem `contactId`) |
+| `GET /contacts/available-variables` | existe ao vivo (**fora do openapi publicado**) → `{variables:{…}}` |
+| `GET /contacts/{id}` | **não existe** (só `DELETE` nesse path) |
+| `/conversation*` (lista, detalhe, mensagens), `/variables/{conversationId}`, `/conversations/{id}/notes` | disponível — `POST /notes` → **201**, `PUT` → 200, `DELETE` → **204 com corpo vazio**; a listagem **não** devolve notas privadas |
+| `DELETE /variables/{conversationId}/{varName}` | 200 com `{message, deleted:{…}}` |
+| `/conversations/{id}/set-status` (e afins) | 200 com `{success:true, message:"Conversation Status changed."}` |
+| `/conversations/{id}/tags` | **401** — exige sessão do dashboard, não API key |
+| `/conversations/{id}/export` | disponível, **binário**: `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` (xlsx, ~8 KB por conversa) |
+| `/conversations/export` (lote) | **404** |
+| `/conversations/history` | disponível (exige `email` + `agentId`) → `{conversations:[], nextCursor}` |
+| `/crm/scenario`, `/crm/step`, `/crm/conversationLog`, `/crm/conversation/count` | disponível |
+| `/crm/events` | **streaming SSE** (`text/event-stream`, evento inicial `CONNECTED`) |
+| `/datastores*`, `/datasources*` | disponível |
+| `/dispatches`, `/dispatches/contacts/lists` | disponível: `{dispatches:[…], count}` e `{lists:[…], count}` (sem `total`) — **`GET /dispatches/{id}` não existe** (404) e `DELETE /dispatches?id=inexistente` responde **500**, não 404 |
+| `/dispatches/contacts` | disponível (exige `contactListId`; `GET /dispatches/contacts/{id}` inexistente → `404 {"error":"Contact not found"}`) |
+| `/artifacts`, `/artifacts/search`, `/artifact-categories` | disponível |
+| `/artifacts/media` | disponível (exige `artifact_id`) |
+| `/whatsapp/templates` | disponível: `GET` exige `agentId` e devolve envelope `{data:[…]}`; agente sem WABA → `400 Agent does not have WhatsApp configured` |
+| `/mercadolivre/products` | disponível: exige `agentId` **e** `serviceProviderId`; `{products, total, page, perPage}` (aceita `page`/`perPage`) |
+| `/mercadolivre/products/count` | disponível: `{count}` da organização; com `agentId` conta só o agente; `serviceProviderId` é ignorado |
+| `/mercadolivre/get-products` | disponível: sem `agentId` → `400 Agent ID is required`; agente sem integração → `404 Mercado Livre service provider not found for this agent` |
+| `/tags`, `/tags/delete-by-name`, `/tags/get-visible-tags` | **404** neste ambiente |
+| `/agent-blacklist`, `/agent-templates/{organizationId}` | **404** neste ambiente |
+| `/webhook/validate` | **404**; `/webhook/webhook` é endpoint de recebimento (não de cliente) |
+| `/whatsapp/conversion-tracking` | **404** |
+| `/messages/interactive/*`, `/whatsapp/{phoneNumberId}/template-message`, `/twilio/*`, `/zapi/*`, `/zapper/*` | rotas de **envio real** — nunca disparar em contatos reais; verificar só no stub |
+| `/forms/{formId}/chat` | disponível (envia formulário ao agente) |
+
+## 7. Cobertura final
+
+Todas as 136 operações publicadas têm skill dedicada ou ficam acessíveis por `api-call/scripts/call.sh`
+(que não depende de contrato específico). O único endpoint que **não** é utilizável como cliente é
+`POST /webhook/webhook` (recebimento de payload externo pela plataforma).

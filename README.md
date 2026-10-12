@@ -13,6 +13,17 @@ Skills para o **pi** (agente de IA) que permitem gerenciar, testar e ajustar age
 | **conversation-cleanup** | Lista e deleta conversas de teste (canal `api`) |
 | **datastore-add** | Cria base de conhecimento, adiciona fontes (texto/QA/URL), confere indexação e conecta a base ao agente |
 | **datastore-tags** | Etiqueta fontes da base (`config.tags`) e define `custom_id` para filtro multi-tenant |
+| **api-call** | Chama qualquer endpoint da API (136 operações) e lista o catálogo de rotas disponíveis |
+| **contacts** | Gerencia contatos e variáveis de contato |
+| **conversation-actions** | Ações de atendimento: assign, status, prioridade, IA, notas, tags, variáveis, envio, export |
+| **agent-admin** | Cria/lista/deleta agentes, whitelist e envio de formulário ao agente |
+| **artifacts** | Catálogo de artefatos, categorias, mídia (upload) e busca |
+| **crm** | Cenários, etapas, logs de conversa e eventos em tempo real (SSE) |
+| **dispatches** | Disparos em massa, listas de contatos e fila de envio |
+| **whatsapp** | Templates e mensagens interativas do WhatsApp (botões, listas, CTA, localização) |
+| **integrations** | Envio por Twilio, Z-API e Zapper |
+| **tags** | Tags da organização (indisponível neste plano: as rotas respondem 404) |
+| **mercadolivre** | Produtos sincronizados do Mercado Livre |
 
 ---
 
@@ -80,6 +91,17 @@ ln -s "$(pwd)/tools-update" ~/.pi/agent/skills/
 ln -s "$(pwd)/conversation-cleanup" ~/.pi/agent/skills/
 ln -s "$(pwd)/datastore-add" ~/.pi/agent/skills/
 ln -s "$(pwd)/datastore-tags" ~/.pi/agent/skills/
+ln -s "$(pwd)/api-call" ~/.pi/agent/skills/
+ln -s "$(pwd)/contacts" ~/.pi/agent/skills/
+ln -s "$(pwd)/conversation-actions" ~/.pi/agent/skills/
+ln -s "$(pwd)/agent-admin" ~/.pi/agent/skills/
+ln -s "$(pwd)/artifacts" ~/.pi/agent/skills/
+ln -s "$(pwd)/crm" ~/.pi/agent/skills/
+ln -s "$(pwd)/dispatches" ~/.pi/agent/skills/
+ln -s "$(pwd)/whatsapp" ~/.pi/agent/skills/
+ln -s "$(pwd)/integrations" ~/.pi/agent/skills/
+ln -s "$(pwd)/tags" ~/.pi/agent/skills/
+ln -s "$(pwd)/mercadolivre" ~/.pi/agent/skills/
 ```
 
 Ou use o instalador automatico:
@@ -92,7 +114,7 @@ Ou use o instalador automatico:
 
 ```bash
 mkdir -p ~/.pi/agent/skills
-cp -r agent-test investigation prompt-adjust tools-update conversation-cleanup datastore-add datastore-tags ~/.pi/agent/skills/
+cp -r agent-test investigation prompt-adjust tools-update conversation-cleanup datastore-add datastore-tags api-call contacts conversation-actions agent-admin artifacts crm dispatches whatsapp integrations tags mercadolivre ~/.pi/agent/skills/
 ```
 
 ```bash
@@ -106,6 +128,7 @@ pi --skill ./agent-test
 pi --skill ./investigation
 pi --skill ./agent-test --skill ./tools-update
 pi --skill ./datastore-add --skill ./datastore-tags
+pi --skill ./api-call --skill ./crm
 ```
 
 ---
@@ -123,6 +146,17 @@ New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\tools-updat
 New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\conversation-cleanup" -Target "$pwd\conversation-cleanup"
 New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\datastore-add" -Target "$pwd\datastore-add"
 New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\datastore-tags" -Target "$pwd\datastore-tags"
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\api-call" -Target "$pwd\api-call"
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\contacts" -Target "$pwd\contacts"
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\conversation-actions" -Target "$pwd\conversation-actions"
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\agent-admin" -Target "$pwd\agent-admin"
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\artifacts" -Target "$pwd\artifacts"
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\crm" -Target "$pwd\crm"
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\dispatches" -Target "$pwd\dispatches"
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\whatsapp" -Target "$pwd\whatsapp"
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\integrations" -Target "$pwd\integrations"
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\tags" -Target "$pwd\tags"
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\mercadolivre" -Target "$pwd\mercadolivre"
 ```
 
 > Se der erro de permissao, abra o PowerShell como **Administrador** ou use a Opcao B.
@@ -138,6 +172,17 @@ Copy-Item -Recurse -Force "$pwd\tools-update" "$env:USERPROFILE\.pi\agent\skills
 Copy-Item -Recurse -Force "$pwd\conversation-cleanup" "$env:USERPROFILE\.pi\agent\skills\"
 Copy-Item -Recurse -Force "$pwd\datastore-add" "$env:USERPROFILE\.pi\agent\skills\"
 Copy-Item -Recurse -Force "$pwd\datastore-tags" "$env:USERPROFILE\.pi\agent\skills\"
+Copy-Item -Recurse -Force "$pwd\api-call" "$env:USERPROFILE\.pi\agent\skills\"
+Copy-Item -Recurse -Force "$pwd\contacts" "$env:USERPROFILE\.pi\agent\skills\"
+Copy-Item -Recurse -Force "$pwd\conversation-actions" "$env:USERPROFILE\.pi\agent\skills\"
+Copy-Item -Recurse -Force "$pwd\agent-admin" "$env:USERPROFILE\.pi\agent\skills\"
+Copy-Item -Recurse -Force "$pwd\artifacts" "$env:USERPROFILE\.pi\agent\skills\"
+Copy-Item -Recurse -Force "$pwd\crm" "$env:USERPROFILE\.pi\agent\skills\"
+Copy-Item -Recurse -Force "$pwd\dispatches" "$env:USERPROFILE\.pi\agent\skills\"
+Copy-Item -Recurse -Force "$pwd\whatsapp" "$env:USERPROFILE\.pi\agent\skills\"
+Copy-Item -Recurse -Force "$pwd\integrations" "$env:USERPROFILE\.pi\agent\skills\"
+Copy-Item -Recurse -Force "$pwd\tags" "$env:USERPROFILE\.pi\agent\skills\"
+Copy-Item -Recurse -Force "$pwd\mercadolivre" "$env:USERPROFILE\.pi\agent\skills\"
 ```
 
 ##### Opcao C — Usar direto com --skill (sem instalar)
@@ -147,6 +192,7 @@ pi --skill .\agent-test
 pi --skill .\investigation
 pi --skill .\agent-test --skill .\tools-update
 pi --skill .\datastore-add --skill .\datastore-tags
+pi --skill .\api-call --skill .\crm
 ```
 
 ---
@@ -187,6 +233,17 @@ Apos instalado, converse com o pi. As skills carregam automaticamente quando o c
 /skill:chatvolt-conversation-cleanup
 /skill:chatvolt-datastore-add
 /skill:chatvolt-datastore-tags
+/skill:chatvolt-api-call
+/skill:chatvolt-contacts
+/skill:chatvolt-conversation-actions
+/skill:chatvolt-agent-admin
+/skill:chatvolt-artifacts
+/skill:chatvolt-crm
+/skill:chatvolt-dispatches
+/skill:chatvolt-whatsapp
+/skill:chatvolt-integrations
+/skill:chatvolt-tags
+/skill:chatvolt-mercadolivre
 ```
 
 ### 5. Variaveis de ambiente (atalho)
@@ -422,19 +479,32 @@ chatvolt-skills/
 ├── chatvolt.sh                  -- Script de atalho (uso direto)
 ├── tests/
 │   ├── smoke.sh                 -- Suite headless (--lint, --stub, --live, --probe)
-│   └── stub_server.py           -- Stub HTTP offline da API
+│   ├── stub_server.py           -- Stub HTTP offline da API
+│   └── stub-fixtures/           -- Rotas e casos de teste por skill
 ├── agent-test/                  -- Teste de agentes (config, query, fluxo esperado)
 ├── investigation/               -- Investigacao (config, conversas, mensagens)
 ├── prompt-adjust/               -- Prompt, modelo, temperatura e webhook
 ├── tools-update/                -- Tools do agente (http, datastore, form, ...)
 ├── conversation-cleanup/        -- Conversas de teste (canal api)
 ├── datastore-add/               -- Base de conhecimento (criar, alimentar, consultar)
-└── datastore-tags/              -- Etiquetas e custom_id das fontes da base
+├── datastore-tags/              -- Etiquetas e custom_id das fontes da base
+├── api-call/                    -- Chamada generica + catalogo das 136 rotas
+├── contacts/                    -- Contatos e variaveis de contato
+├── conversation-actions/        -- Assign, status, prioridade, IA, notas, tags, envio, export
+├── agent-admin/                 -- Criar/remover agente, whitelist, formulario ao agente
+├── artifacts/                   -- Artefatos, categorias, midia e busca
+├── crm/                         -- Cenarios, etapas, logs e eventos (SSE)
+├── dispatches/                  -- Disparos, listas de contatos e fila
+├── whatsapp/                    -- Templates e mensagens interativas
+├── integrations/                -- Twilio, Z-API e Zapper
+├── tags/                        -- Tags da organizacao (404 neste plano)
+└── mercadolivre/                -- Produtos sincronizados do Mercado Livre
 
 Cada skill segue o mesmo formato:
     <skill>/SKILL.md             -- Instrucoes para o agente
     <skill>/scripts/<nome>.sh    -- Scripts independentes
     <skill>/scripts/_lib.sh      -- Helpers HTTP (identico em todas as skills)
+    tests/stub-fixtures/<skill>.json -- Rotas simuladas + casos de teste da skill
 ```
 
 ---
