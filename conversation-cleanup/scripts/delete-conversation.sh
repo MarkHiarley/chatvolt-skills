@@ -44,7 +44,9 @@ EOF
 source "$(dirname "$0")/_lib.sh"
 
 API_KEY_ARG=""
-if [ -z "${CHATVOLT_API_KEY:-}" ] && [ "$#" -gt 0 ] && [[ "$1" != -* ]]; then API_KEY_ARG="$1"; shift; fi
+# 1º argumento posicional = api-key (vence o CHATVOLT_API_KEY do ambiente,
+# igual às outras skills); a env var é só o atalho quando ele é omitido.
+if [ "$#" -gt 0 ] && [[ "$1" != -* ]]; then API_KEY_ARG="$1"; shift; fi
 
 CONV_ID=""
 FORCE=0
