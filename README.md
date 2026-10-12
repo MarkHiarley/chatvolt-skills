@@ -11,6 +11,8 @@ Skills para o **pi** (agente de IA) que permitem gerenciar, testar e ajustar age
 | **prompt-adjust** | Ajusta: edita prompt, troca modelo, altera temperatura |
 | **tools-update** | Gerencia tools: cria, lista, atualiza e deleta (datastore, HTTP, form) |
 | **conversation-cleanup** | Lista e deleta conversas de teste (canal `api`) |
+| **datastore-add** | Cria base de conhecimento, adiciona fontes (texto/QA/URL), confere indexação e conecta a base ao agente |
+| **datastore-tags** | Etiqueta fontes da base (`config.tags`) e define `custom_id` para filtro multi-tenant |
 
 ---
 
@@ -76,6 +78,8 @@ ln -s "$(pwd)/investigation" ~/.pi/agent/skills/
 ln -s "$(pwd)/prompt-adjust" ~/.pi/agent/skills/
 ln -s "$(pwd)/tools-update" ~/.pi/agent/skills/
 ln -s "$(pwd)/conversation-cleanup" ~/.pi/agent/skills/
+ln -s "$(pwd)/datastore-add" ~/.pi/agent/skills/
+ln -s "$(pwd)/datastore-tags" ~/.pi/agent/skills/
 ```
 
 Ou use o instalador automatico:
@@ -88,7 +92,7 @@ Ou use o instalador automatico:
 
 ```bash
 mkdir -p ~/.pi/agent/skills
-cp -r agent-test investigation prompt-adjust tools-update conversation-cleanup ~/.pi/agent/skills/
+cp -r agent-test investigation prompt-adjust tools-update conversation-cleanup datastore-add datastore-tags ~/.pi/agent/skills/
 ```
 
 ```bash
@@ -101,6 +105,7 @@ cp -r agent-test investigation prompt-adjust tools-update conversation-cleanup ~
 pi --skill ./agent-test
 pi --skill ./investigation
 pi --skill ./agent-test --skill ./tools-update
+pi --skill ./datastore-add --skill ./datastore-tags
 ```
 
 ---
@@ -115,6 +120,9 @@ New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\agent-test"
 New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\investigation" -Target "$pwd\investigation"
 New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\prompt-adjust" -Target "$pwd\prompt-adjust"
 New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\tools-update" -Target "$pwd\tools-update"
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\conversation-cleanup" -Target "$pwd\conversation-cleanup"
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\datastore-add" -Target "$pwd\datastore-add"
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.pi\agent\skills\datastore-tags" -Target "$pwd\datastore-tags"
 ```
 
 > Se der erro de permissao, abra o PowerShell como **Administrador** ou use a Opcao B.
@@ -127,6 +135,9 @@ Copy-Item -Recurse -Force "$pwd\agent-test" "$env:USERPROFILE\.pi\agent\skills\"
 Copy-Item -Recurse -Force "$pwd\investigation" "$env:USERPROFILE\.pi\agent\skills\"
 Copy-Item -Recurse -Force "$pwd\prompt-adjust" "$env:USERPROFILE\.pi\agent\skills\"
 Copy-Item -Recurse -Force "$pwd\tools-update" "$env:USERPROFILE\.pi\agent\skills\"
+Copy-Item -Recurse -Force "$pwd\conversation-cleanup" "$env:USERPROFILE\.pi\agent\skills\"
+Copy-Item -Recurse -Force "$pwd\datastore-add" "$env:USERPROFILE\.pi\agent\skills\"
+Copy-Item -Recurse -Force "$pwd\datastore-tags" "$env:USERPROFILE\.pi\agent\skills\"
 ```
 
 ##### Opcao C — Usar direto com --skill (sem instalar)
@@ -135,6 +146,7 @@ Copy-Item -Recurse -Force "$pwd\tools-update" "$env:USERPROFILE\.pi\agent\skills
 pi --skill .\agent-test
 pi --skill .\investigation
 pi --skill .\agent-test --skill .\tools-update
+pi --skill .\datastore-add --skill .\datastore-tags
 ```
 
 ---
@@ -150,11 +162,20 @@ Apos instalado, converse com o pi. As skills carregam automaticamente quando o c
 > "pi, investiga o agente [ID]. Quero ver o system prompt e as tools que ele tem."
 
 #### Ajustar prompt ou modelo
-> "pi, troca o modelo do agente [ID] para gpt_4_o e ajusta a temperatura pra 0.2."
+> "pi, troca o modelo do agente [ID] para gpt_54_nano e ajusta a temperatura pra 0.2."
+> (a lista de modelos válidos é sempre buscada ao vivo em `GET /agents/models`)
 
 #### Gerenciar tools
 > "pi, lista as tools do agente [ID]."
 > "pi, cria uma HTTP tool no agente [ID] pra consultar precos."
+
+#### Alimentar uma base de conhecimento
+> "pi, cria uma base chamada Politica de Trocas e adiciona o arquivo politica.md com as etiquetas faq, pos-venda."
+> "pi, confere se a fonte indexou e roda uma query de prova na base [ID]."
+
+#### Etiquetar fontes da base
+> "pi, quais etiquetas existem na base [ID]?"
+> "pi, adiciona a etiqueta devolucao na fonte [ID] e marca custom_id tenant-1."
 
 ### 4. Forcar o carregamento de uma skill
 
@@ -163,6 +184,9 @@ Apos instalado, converse com o pi. As skills carregam automaticamente quando o c
 /skill:chatvolt-investigation
 /skill:chatvolt-prompt-adjust
 /skill:chatvolt-tools-update
+/skill:chatvolt-conversation-cleanup
+/skill:chatvolt-datastore-add
+/skill:chatvolt-datastore-tags
 ```
 
 ### 5. Variaveis de ambiente (atalho)
@@ -170,13 +194,13 @@ Apos instalado, converse com o pi. As skills carregam automaticamente quando o c
 #### Linux / macOS (no ~/.bashrc ou ~/.zshrc)
 ```bash
 export CHATVOLT_API_KEY="sk-..."
-export CHATVOLT_AGENT_ID="cminahdll02m496hey09nozu8"
+export CHATVOLT_AGENT_ID="seu-agent-id"
 ```
 
 #### Windows (PowerShell, no $PROFILE)
 ```powershell
 $env:CHATVOLT_API_KEY = "sk-..."
-$env:CHATVOLT_AGENT_ID = "cminahdll02m496hey09nozu8"
+$env:CHATVOLT_AGENT_ID = "seu-agent-id"
 ```
 
 ---
@@ -259,7 +283,21 @@ Cada skill tem scripts independentes em `scripts/`. Funcionam em qualquer sistem
 
 # Listar tools
 ./tools-update/scripts/list-tools.sh "$API_KEY" "$AGENT_ID"
+
+# Listar modelos disponiveis (publico, sem chave)
+./prompt-adjust/scripts/list-models.sh "$API_KEY"
+
+# Bases de conhecimento
+./datastore-add/scripts/list-datastores.sh "$API_KEY"
+./datastore-add/scripts/add-source.sh "$API_KEY" "$DATASTORE_ID" --text-file politica.md --tags faq,pos-venda
+./datastore-add/scripts/query-base.sh "$API_KEY" "$DATASTORE_ID" "qual o prazo de troca?"
+
+# Etiquetas das fontes
+./datastore-tags/scripts/list-tags.sh "$API_KEY" "$DATASTORE_ID"
+./datastore-tags/scripts/add-tag.sh "$API_KEY" "$DATASTORE_ID" "$SOURCE_ID" devolucao --text-file politica.md
 ```
+
+Todos os scripts aceitam `CV_JSON=1` (saída só JSON em stdout, diagnósticos em stderr) — útil para encadear com `jq`/outros agentes.
 
 ---
 
@@ -268,13 +306,13 @@ Cada skill tem scripts independentes em `scripts/`. Funcionam em qualquer sistem
 ### Exemplo 1: Testar se o agente segue o prompt
 
 ```
-Voce: pi, testa o agente cminahdll02m496hey09nozu8
+Voce: pi, testa o agente seu-agent-id
       com a API key sk-1234
       Quero testar se ele responde em portugues e se apresenta como "Assistente"
 
   pi: Buscando configuracao do agente...
 
-      Agent: Meu Agente (gpt_4_o, temp: 0.3)
+      Agent: Meu Agente (gpt_54_nano, temp: 0.3)
 
       System Prompt:
       """Voce e um assistente da Empresa X.
@@ -306,7 +344,7 @@ Voce: Quem e voce?
 ### Exemplo 2: Adicionar uma tool HTTP
 
 ```
-Voce: pi, adiciona uma tool HTTP no agente cminahdll02m496hey09nozu8
+Voce: pi, adiciona uma tool HTTP no agente seu-agent-id
       para consultar clima
 
   pi: Qual a URL da API?
@@ -337,23 +375,40 @@ Voce: sim, city (obrigatorio, preenchido pelo usuario)
 
 | Metodo | Endpoint | Skill |
 |--------|----------|-------|
-| `GET` | `/agents/{id}` | investigation, prompt-adjust, agent-test |
-| `PATCH` | `/agents/{id}` | prompt-adjust |
-| `POST` | `/agents/{id}/query` | investigation, agent-test |
+| `GET` | `/agents` | agent-test, investigation |
+| `GET` | `/agents/{id}` | agent-test, investigation, prompt-adjust |
 | `PATCH` | `/agents/{id}` | prompt-adjust |
 | `GET` | `/agents/models` | prompt-adjust |
-| `POST` | `/agents/{id}/webhook` | prompt-adjust |
-| `GET` | `/conversation?organizationId={id}` | conversation-cleanup |
+| `POST` | `/agents/{id}/query` | agent-test, investigation, prompt-adjust |
+| `PATCH` | `/agents/{id}/webhook?type=&enabled=` | prompt-adjust |
+| `GET` | `/agents/{id}/tools` | agent-test, tools-update |
+| `POST` | `/agents/{id}/tools` | tools-update, datastore-add |
+| `PATCH` | `/agents/{id}/tools/{toolId}` | tools-update |
+| `DELETE` | `/agents/{id}/tools/{toolId}` | tools-update |
+| `GET` | `/conversation` | investigation, conversation-cleanup |
+| `GET` | `/conversation/{id}` | conversation-cleanup |
 | `DELETE` | `/conversation/{id}` | conversation-cleanup |
-| `GET` | `/api/agents/{id}/tools` | tools-update |
-| `POST` | `/api/agents/{id}/tools` | tools-update |
-| `PATCH` | `/api/agents/{id}/tools/{toolId}` | tools-update |
-| `DELETE` | `/api/agents/{id}/tools/{toolId}` | tools-update |
-| `GET` | `/conversation?agentId={id}` | investigation |
-| `GET` | `/conversation/{id}/messages/{count}` | investigation |
+| `GET` | `/conversation/{id}/messages/{count}` | investigation, agent-test |
+| `GET` | `/datastores/list` | datastore-add |
+| `POST` | `/datastores` | datastore-add |
+| `GET` | `/datastores/{id}` | datastore-add |
+| `PATCH` | `/datastores/{id}` | datastore-add |
+| `DELETE` | `/datastores/{id}` | datastore-add |
+| `POST` | `/datastores/{id}/query` | datastore-add, datastore-tags |
+| `GET` | `/datasources/list?datastoreId={id}` | datastore-add, datastore-tags |
+| `POST` | `/datasources` | datastore-add, datastore-tags |
+| `GET` | `/datasources/{id}?idstore={datastoreId}` | datastore-add, datastore-tags |
+| `DELETE` | `/datasources/{id}` | datastore-add |
 
 **Base URL:** `https://api.chatvolt.ai`
 **Autenticacao:** `Authorization: Bearer <api-key>`
+
+Detalhes de contrato (formato real das respostas, parametros, divergencias da documentacao oficial e limites de rate limit) estao em [`SOURCES.md`](SOURCES.md). Pontos que mais confundem:
+
+- Nao existe `GET /agents/{id}/tools/{toolId}` (responde `404`) — para ver uma tool, filtre a listagem.
+- `POST /agents/{id}/webhook` **nao existe**: o endpoint e um toggle via `PATCH` com `?type=&enabled=`.
+- A maioria das rotas devolve o objeto/array na raiz; so `/datastores/list` e `/datasources/list` usam envelope `{data, pagination}`.
+- `GET /conversation` filtra por `agentId`, `channel`, `createdAt`, `endDate`, `status`, `priority`, `tag`, `ai`, `limit` (max 100) e `cursor` — **nao** por `organizationId`.
 
 ---
 
@@ -362,24 +417,44 @@ Voce: sim, city (obrigatorio, preenchido pelo usuario)
 ```
 chatvolt-skills/
 ├── README.md
+├── SOURCES.md                   -- Contrato real da API (doc x openapi x probe ao vivo)
 ├── install.sh                   -- Instalador automatico (Linux/macOS)
 ├── chatvolt.sh                  -- Script de atalho (uso direto)
-├── agent-test/                  -- Skill de teste de agentes
-│   ├── SKILL.md
-│   └── scripts/
-│       ├── get-agent.sh
-│       ├── send-query.sh
-│       ├── analyze-results.sh
-│       └── test-agent.sh
-├── investigation/               -- Skill de investigacao
-│   ├── SKILL.md
-│   └── scripts/
-├── prompt-adjust/               -- Skill de ajuste de prompt
-│   ├── SKILL.md
-│   └── scripts/
-└── tools-update/                -- Skill de gerenciamento de tools
-    ├── SKILL.md
-    └── scripts/
+├── tests/
+│   ├── smoke.sh                 -- Suite headless (--lint, --stub, --live, --probe)
+│   └── stub_server.py           -- Stub HTTP offline da API
+├── agent-test/                  -- Teste de agentes (config, query, fluxo esperado)
+├── investigation/               -- Investigacao (config, conversas, mensagens)
+├── prompt-adjust/               -- Prompt, modelo, temperatura e webhook
+├── tools-update/                -- Tools do agente (http, datastore, form, ...)
+├── conversation-cleanup/        -- Conversas de teste (canal api)
+├── datastore-add/               -- Base de conhecimento (criar, alimentar, consultar)
+└── datastore-tags/              -- Etiquetas e custom_id das fontes da base
+
+Cada skill segue o mesmo formato:
+    <skill>/SKILL.md             -- Instrucoes para o agente
+    <skill>/scripts/<nome>.sh    -- Scripts independentes
+    <skill>/scripts/_lib.sh      -- Helpers HTTP (identico em todas as skills)
+```
+
+---
+
+## Documentacao e testes
+
+A documentacao oficial fica em <https://chat-volt.mintlify.app/pages/agents/reference> (indice completo em <https://chat-volt.mintlify.site/llms.txt>). Ela tem divergencias conhecidas em relacao ao comportamento real da API — todas catalogadas em [`SOURCES.md`](SOURCES.md), que e a fonte da verdade deste repositorio.
+
+```bash
+# Verificacao estatica (sintaxe, _lib.sh identico, padroes proibidos)
+./tests/smoke.sh --lint
+
+# Execucao offline contra o stub (sem tocar a API real)
+./tests/smoke.sh --stub
+
+# Leituras reais (exige chave)
+CHATVOLT_API_KEY="sk-..." CHATVOLT_AGENT_ID="seu-agent-id" ./tests/smoke.sh --live
+
+# Inclui escrita em recursos descartaveis (cria e apaga agente/base OMP-SMOKE-*)
+CHATVOLT_API_KEY="sk-..." ./tests/smoke.sh --live --mutating
 ```
 
 ---

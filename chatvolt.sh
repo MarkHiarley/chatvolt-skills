@@ -15,7 +15,7 @@ if [ ! -d "$SKILL_DIR" ]; then
   echo "Available skills:"
   for d in "$(dirname "$0")"/*/; do
     name=$(basename "$d")
-    [ "$name" != ".git" ] && echo "  - $name"
+    [ "$name" != ".git" ] && [ "$name" != "tests" ] && echo "  - $name"
   done
   exit 1
 fi

@@ -14,6 +14,7 @@ set -euo pipefail
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 PI_SKILLS_DIR="$HOME/.pi/agent/skills"
 MODE="${1:---symlink}"
+SKILLS="agent-test investigation prompt-adjust tools-update conversation-cleanup datastore-add datastore-tags"
 
 mkdir -p "$PI_SKILLS_DIR"
 
@@ -36,6 +37,8 @@ if [[ "$(uname -s)" =~ MINGW|MSYS|CYGWIN ]]; then
   echo "   New-Item -ItemType Junction -Path \"\$env:USERPROFILE\.pi\agent\skills\prompt-adjust\" -Target \"$REPO_DIR\prompt-adjust\""
   echo "   New-Item -ItemType Junction -Path \"\$env:USERPROFILE\.pi\agent\skills\tools-update\" -Target \"$REPO_DIR\tools-update\""
   echo "   New-Item -ItemType Junction -Path \"\$env:USERPROFILE\.pi\agent\skills\conversation-cleanup\" -Target \"$REPO_DIR\conversation-cleanup\""
+  echo "   New-Item -ItemType Junction -Path \"\$env:USERPROFILE\.pi\agent\skills\datastore-add\" -Target \"$REPO_DIR\datastore-add\""
+  echo "   New-Item -ItemType Junction -Path \"\$env:USERPROFILE\.pi\agent\skills\datastore-tags\" -Target \"$REPO_DIR\datastore-tags\""
   echo ""
   echo "   Ou copie as pastas (não precisa de admin):"
   echo "   Copy-Item -Recurse -Force \"$REPO_DIR\agent-test\" \"\$env:USERPROFILE\.pi\agent\skills\""
@@ -43,6 +46,8 @@ if [[ "$(uname -s)" =~ MINGW|MSYS|CYGWIN ]]; then
   echo "   Copy-Item -Recurse -Force \"$REPO_DIR\prompt-adjust\" \"\$env:USERPROFILE\.pi\agent\skills\""
   echo "   Copy-Item -Recurse -Force \"$REPO_DIR\tools-update\" \"\$env:USERPROFILE\.pi\agent\skills\""
   echo "   Copy-Item -Recurse -Force \"$REPO_DIR\conversation-cleanup\" \"\$env:USERPROFILE\.pi\agent\skills\""
+  echo "   Copy-Item -Recurse -Force \"$REPO_DIR\datastore-add\" \"\$env:USERPROFILE\.pi\agent\skills\""
+  echo "   Copy-Item -Recurse -Force \"$REPO_DIR\datastore-tags\" \"\$env:USERPROFILE\.pi\agent\skills\""
   echo ""
   exit 0
 fi
@@ -53,7 +58,7 @@ case "$MODE" in
     echo "Modo: link simbólico (recomendado)"
     echo "  → alterações no repo refletem automaticamente no pi"
     echo ""
-    for skill in agent-test investigation prompt-adjust tools-update conversation-cleanup; do
+    for skill in $SKILLS; do
       target="$PI_SKILLS_DIR/$skill"
       [ -L "$target" ] && rm "$target"
       [ -d "$target" ] && rm -rf "$target"
@@ -65,7 +70,7 @@ case "$MODE" in
     echo "Modo: cópia"
     echo "  → skills independentes do repo"
     echo ""
-    for skill in agent-test investigation prompt-adjust tools-update conversation-cleanup; do
+    for skill in $SKILLS; do
       target="$PI_SKILLS_DIR/$skill"
       [ -d "$target" ] && rm -rf "$target"
       cp -r "$REPO_DIR/$skill" "$target"
