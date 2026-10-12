@@ -1,57 +1,110 @@
 ---
 name: chatvolt-agent-test
 description: >
-  Testa agentes Chatvolt: envia queries, mantém conversa, e verifica se o
-  comportamento segue as regras que você definir. Use quando precisar validar
-  se um agente está seguindo corretamente suas instruções, testar cenários
-  complexos, ou debuggar comportamento inesperado.
+  Testa um agente Chatvolt de ponta a ponta: mostra a configuração, envia
+  queries em conversa nova (ou continuando uma, com confirmação explícita),
+  acompanha o stream SSE e monta a transcrição AGENT/HUMAN com as sources e as
+  regras esperadas. Use para validar se o agente segue as instruções, testar
+  cenários complexos ou depurar comportamento inesperado.
 ---
 
 # Chatvolt Agent Testing
 
-Testa agentes Chatvolt. Você me diz **o que quer testar** e **quais regras o agente deve seguir**, e eu conduzo o teste.
+Você informa a API key, o ID do agente e as regras que o agente deveria seguir; eu mostro a configuração atual, envio as perguntas, guardo o `conversationId` e monto a transcrição (HUMAN/AGENT) com as sources usadas e as regras, para você comparar resposta por resposta.
 
-> **Pré-requisitos:** Chave de API do Chatvolt (https://app.chatvolt.ai/settings/api-keys)
+> **Pré-requisitos:** chave de API (https://app.chatvolt.ai/settings/api-keys) e o ID do agente.
 
-## ⚠️ REGRA CRÍTICA: NUNCA ENVIAR EM CONVERSA EXISTENTE ⚠️
+## Regra crítica: conversa existente exige `--force`
 
-**NUNCA** envie queries em uma conversa existente (com `conversationId`) a menos que o usuário **explicitamente autorize e confirme**.
+Mensagens enviadas por `POST /agents/{id}/query` com `conversationId` são **gravadas no histórico real da conversa** e podem aparecer para o cliente.
 
-Motivo: Mensagens enviadas via API são **salvas permanentemente no histórico real da conversa** no Chatvolt. O cliente real pode ver essas mensagens. Isso polui o histórico e causa confusão.
-
-**Sempre prefira criar uma nova conversa** (omitindo `conversationId`) para testes.
+- **Preferir sempre uma conversa nova**: omita `--conversation` (o agente cria a conversa).
+- `send-query.sh` **recusa** `--conversation` sem `--force`: avisa em stderr e **sai com código 2 sem chamar a API**.
+- Conversas de teste criadas por `api` podem ser apagadas depois com a skill `chatvolt-conversation-cleanup`.
 
 ## Como funciona
 
-1. Você informa a **API key** e o **ID do agente**
-2. Me diz qual o **fluxo esperado** — as regras que o agente deve seguir (ex: "responder em português, se apresentar como suporte, nunca mencionar concorrentes")
-3. **SEMPRE** inicie uma **nova conversa** para testes (não reutilize conversas reais)
-4. Eu envio as perguntas que você definir, sempre na **mesma conversa de teste**
-5. Quando você quiser, analiso se as respostas estão seguindo as regras
+1. **Configuração** — `get-agent.sh` lê `GET /agents/{id}` e `GET /agents/{id}/tools` e mostra nome, id, handle, modelo, temperatura, visibilidade, o system prompt completo e a tabela de tools.
+2. **Envio** — `send-query.sh` monta o payload apenas com o que foi passado e chama `POST /agents/{id}/query`. Sem `--conversation`, uma conversa nova é criada; o `conversationId` retornado é impresso.
+3. **Stream** — com `--stream`, o corpo vai com `streaming:true` e a saída é lida com `curl -N` (SSE).
+4. **Transcrição** — `analyze-results.sh` busca as mensagens reais em `GET /conversation/{id}/messages/{n}`, imprime o system prompt do agente, a transcrição cronológica (HUMAN/AGENT), a contagem e as regras esperadas. **Nenhuma avaliação automática é feita** — não existe "análise por IA" inventada: a comparação é sua.
+5. **Sessão interativa** — `test-agent.sh` encadeia tudo: config → fluxo esperado → conversa nova → loop pergunta/resposta com histórico e análise sob demanda.
 
 ## API usada
 
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
-| `GET` | `/agents/{id}` | Obter detalhes do agente (prompt, modelo, tools) |
-| `POST` | `/agents/{id}/query` | Enviar query e obter resposta |
+| `GET` | `/agents/{id}` | Configuração do agente (prompt, modelo, temperatura, visibilidade) |
+| `GET` | `/agents/{id}/tools` | Lista de tools do agente (array na raiz) |
+| `POST` | `/agents/{id}/query` | Envia a query; cria ou continua a conversa |
+| `GET` | `/conversation/{id}/messages/{n}` | Últimas `n` mensagens da conversa |
+| `GET` | `/conversation` | Lista conversas (filtros `agentId`, `channel`, `status`, `limit`…) |
 
-Base URL: `https://api.chatvolt.ai`
-Autenticação: `Authorization: Bearer <api-key>`
+Base URL: `https://api.chatvolt.ai` · `Authorization: Bearer <api-key>` · docs: <https://chat-volt.mintlify.app/pages/agents/reference> (OpenAPI: <https://chat-volt.mintlify.app/openapi.yaml>)
 
-### Parâmetros da query
+### Parâmetros de `POST /agents/{id}/query`
 
-- `query` (obrigatório): texto da pergunta
-- `conversationId`: ID de conversa existente. Se omitido/inválido, cria nova
-- `temperature`: sobrescreve a temperatura do agente (0.0–1.0)
-- `modelName`: sobrescreve o modelo do agente
-- `contact`, `contactId`, `visitorId`: dados opcionais do contato
+| Campo | Obrigatório | Descrição |
+|-------|-------------|-----------|
+| `query` | sim | Texto da pergunta |
+| `conversationId` | não | Continua a conversa indicada; **grava no histórico real** |
+| `streaming` | não | `true` devolve SSE (`send-query.sh --stream`) |
+| `temperature` / `modelName` | não | Sobrescrevem temperatura/modelo do agente |
+| `visitorId`, `contactId`, `contact{firstName,lastName,email,phoneNumber,userId}` | não | Identificação do visitante/contato |
+| `systemPrompt` | não | System prompt válido só para esta query |
+| `callbackURL` | não | URL chamada ao final da resposta |
+| `filters{custom_ids,datasource_ids}` | não | Filtros de recuperação na base |
+
+### Formato da resposta
+
+A resposta volta **na raiz** (não existe `data.content`):
+
+```json
+{ "answer": "...", "sources": [ { "chunk_id": "...", "datastore_id": "...",
+  "datasource_id": "...", "datasource_name": "...", "datasource_type": "file",
+  "mime_type": "...", "score": 0.39769745 } ],
+  "messageId": "...", "conversationId": "...", "visitorId": "..." }
+```
+
+Com `streaming:true`, o corpo é SSE:
+
+```
+event: endpoint_response
+data: %7B%22messageId%22%3A...%7D
+
+event:
+data: [DONE]
+```
+
+O JSON do evento vem com URL-encoding — os scripts decodificam e imprimem o resultado final.
+
+### `GET /conversation/{id}/messages/{n}`
+
+Retorna `{status, isAiEnabled, userId, organizationId, participantsContacts, lastHumanInteractionAt, messages:[...]}`.
+`messages` vem da **mais recente para a mais antiga** e cada item é `{id, text, from, read, attachments, createdAt, eval}` com `from` em `human|agent`.
+`n` é o número máximo de mensagens pedidas (os scripts usam 200 e avisam quando o limite é atingido).
+**Este endpoint não devolve `sources`** — para analisá-las, passe o JSON cru da query com `--sources`.
+Conversa inexistente/apagada responde `null` com HTTP 200; os scripts detectam e explicam.
+
+### Tools
+
+Os tipos observados na organização incluem `http`, `datastore`, `follow_up_messages`, `delayed_responses`, `artifact_category_selector`, `mark_as_resolved`, `quick_reply_buttons` e `request_human`.
+**Não existe `GET /agents/{id}/tools/{toolId}`** (responde 404) — para ver uma tool, filtre a listagem (skill `chatvolt-tools-update`).
+
+### Erros e limites
+
+`400`, `401`, `403`, `404`, `406` (sessão do canal expirada), `402` (quota do plano), `429` (60 req/min, 10.000/dia, com `Retry-After`), `5xx`.
+Códigos de saída dos scripts: **0** ok · **1** erro de cliente · **2** uso indevido (`--conversation` sem `--force`) · **3** quota · **4** rede · **5** servidor · **130** cancelado.
 
 ## Scripts auxiliares
 
-Na pasta `scripts/` tem utilitários que posso usar quando necessário:
+Estão em `scripts/` (rode com `bash scripts/<nome>.sh` ou via `chatvolt.sh agent-test <nome>.sh`).
 
-- `get-agent.sh <api-key> <agent-id>` — mostra configuração do agente
-- `send-query.sh <api-key> <agent-id> <query> [conversation-id] [temp] [model]` — envia query
-- `analyze-results.sh <api-key> <agent-id> <conv-id> <history-file> <fluxo>` — análise
-- `test-agent.sh <api-key> <agent-id>` — modo interativo (se preferir)
+- `get-agent.sh <api-key> <agent-id>` — configuração + system prompt + tabela de tools. `CV_JSON=1` ⇒ `{"agent":{...},"tools":[...]}`.
+- `send-query.sh <api-key> <agent-id> <query> [opções]` — envia a query.
+  `--conversation <id>` (exige `--force`), `--force`, `--temp <0.0-1.0>`, `--model <nome>`, `--visitor-id`, `--contact-id`, `--contact-first-name`, `--contact-email`, `--contact-phone`, `--system-prompt`, `--callback-url`, `--stream`.
+  Imprime `answer`, `conversationId`, `messageId`, `visitorId` e as `sources`; `CV_JSON=1` ⇒ JSON cru.
+- `analyze-results.sh <api-key> <agent-id> <conversation-id> [--expected "<regras>"] [--expected-file <f>] [--sources <json|@arquivo>] [--limit <n>]` — system prompt, transcrição cronológica, contagem, sources e regras esperadas. Sem julgamento automático.
+- `test-agent.sh <api-key> <agent-id>` — sessão interativa. Comandos: `:continuar`, `:nova`, `:historico`, `:analisar`, `:sair`, `:ajuda`; qualquer outra linha é enviada como pergunta.
+
+A api key também pode vir de `CHATVOLT_API_KEY`, dispensando o primeiro argumento. `CV_API_BASE` troca a base URL (usado pelos testes offline).
