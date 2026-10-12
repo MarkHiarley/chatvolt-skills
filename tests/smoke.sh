@@ -31,6 +31,13 @@ PASS=0
 FAIL=0
 SKIP=0
 
+# Credenciais reais capturadas na largada: a fase offline (`--stub`) limpa o
+# ambiente para não misturar key real com o stub, e as fases live usam isto.
+SAVED_KEY="${CHATVOLT_API_KEY:-}"
+SAVED_AGENT="${CHATVOLT_AGENT_ID:-}"
+SAVED_DATASTORE="${CHATVOLT_DATASTORE_ID:-}"
+SAVED_CONVERSATION="${CHATVOLT_CONVERSATION_ID:-}"
+
 ok()   { PASS=$((PASS + 1)); printf '  \033[32mPASS\033[0m %s\n' "$1"; }
 bad()  { FAIL=$((FAIL + 1)); printf '  \033[31mFAIL\033[0m %s\n' "$1"; }
 skip() { SKIP=$((SKIP + 1)); printf '  \033[33mSKIP\033[0m %s\n' "$1"; }
@@ -121,6 +128,7 @@ assert_run() {
 stub_tests() {
   head_ "stub: leituras (CV_API_BASE local)"
   export CV_API_BASE="http://127.0.0.1:${STUB_PORT}" CV_MAX_RETRIES=3 CV_RETRY_WAIT=0 CV_YES=1
+  unset CHATVOLT_API_KEY CHATVOLT_AGENT_ID CHATVOLT_DATASTORE_ID CHATVOLT_CONVERSATION_ID
   local K="stub-key"
 
   assert_run "agent-test/get-agent.sh" "Agente Stub" 0 ./agent-test/scripts/get-agent.sh "$K" agent-1
@@ -183,10 +191,7 @@ print("PASS")'
 }
 
 live_tests() {
-  local K="${CHATVOLT_API_KEY:-}"
-  local A="${CHATVOLT_AGENT_ID:-}"
-  local DS="${CHATVOLT_DATASTORE_ID:-}"
-  local CV="${CHATVOLT_CONVERSATION_ID:-}"
+  local K="$SAVED_KEY" A="$SAVED_AGENT" DS="$SAVED_DATASTORE" CV="$SAVED_CONVERSATION"
   head_ "live: leituras reais"
   if [ -z "$K" ] || [ -z "$A" ]; then
     skip "CHATVOLT_API_KEY/CHATVOLT_AGENT_ID não definidos — pulando live"
@@ -209,7 +214,7 @@ live_tests() {
 
 # ── Live mutante (recursos descartáveis OMP-SMOKE-*) ─────────────────────
 mutating_tests() {
-  local K="${CHATVOLT_API_KEY:-}"
+  local K="$SAVED_KEY"
   head_ "live --mutating: escrita em recursos descartáveis"
   if [ -z "$K" ]; then skip "sem CHATVOLT_API_KEY — pulando mutating"; return 0; fi
   unset CV_API_BASE
@@ -257,11 +262,11 @@ mutating_tests() {
 
 # ── Probe ────────────────────────────────────────────────────────────────
 probe() {
-  local K="${CHATVOLT_API_KEY:-}"
+  local K="$SAVED_KEY"
   head_ "probe: gravando respostas cruas"
   if [ -z "$K" ]; then skip "sem CHATVOLT_API_KEY"; return 0; fi
   mkdir -p tests/probe
-  local out="tests/probe/latest.json" A="${CHATVOLT_AGENT_ID:-}" DS="${CHATVOLT_DATASTORE_ID:-}"
+  local out="tests/probe/latest.json" A="$SAVED_AGENT" DS="$SAVED_DATASTORE"
   python3 - "$K" "$A" "$DS" "$out" <<'PY'
 import json, sys, urllib.request, urllib.error
 key, agent, ds, out = sys.argv[1:5]
