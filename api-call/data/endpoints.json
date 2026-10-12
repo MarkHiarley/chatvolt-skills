@@ -1,0 +1,1001 @@
+{
+  "generated_from": "https://chat-volt.mintlify.app/openapi.yaml",
+  "checked_at": "2026-10-12",
+  "base_url": "https://api.chatvolt.ai",
+  "notes": [
+    "A maioria das rotas devolve o objeto/array na raiz; apenas /datastores/list e /datasources/list usam envelope {data,pagination}.",
+    "Rotas marcadas como ausentes respondem 404 no nosso ambiente: existem na doc, mas não neste plano/organização.",
+    "/conversations/{id}/tags responde 401 com API key: depende de sessão do dashboard.",
+    "Verificado ao vivo além do spec: GET /contacts/available-variables existe e devolve {variables:{…}}.",
+    "Verificado ao vivo contra a doc: GET /dispatches/{id} NÃO existe (404) e GET /contacts/{id} também não (só DELETE nesse path).",
+    "GET /contacts pagina por cursor (nextCursor = '<dataISO>_<id>'), não por offset — o parâmetro offset do spec é ignorado pela API.",
+    "GET /dispatches e GET /dispatches/contacts/lists devolvem {dispatches|lists, count}, sem campo total.",
+    "POST /notes devolve 201; DELETE /conversations/{id}/notes/{noteId} devolve 204 sem corpo."
+  ],
+  "groups": [
+    "agent-blacklist",
+    "agent-templates",
+    "agent-whitelist-whatsapp",
+    "agents",
+    "artifact-categories",
+    "artifacts",
+    "contacts",
+    "conversation",
+    "conversations",
+    "crm",
+    "datasources",
+    "datastores",
+    "dispatches",
+    "forms",
+    "mercadolivre",
+    "messages",
+    "tags",
+    "twilio",
+    "variables",
+    "webhook",
+    "whatsapp",
+    "zapi",
+    "zapper"
+  ],
+  "operations": [
+    {
+      "method": "GET",
+      "path": "/agent-blacklist",
+      "group": "agent-blacklist",
+      "availability": "ausente nesta organização (404)",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/agent-blacklist",
+      "group": "agent-blacklist",
+      "availability": "ausente nesta organização (404)",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/agent-blacklist/{agentId}",
+      "group": "agent-blacklist",
+      "availability": "ausente nesta organização (404)",
+      "documented": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/agent-blacklist/{agentId}",
+      "group": "agent-blacklist",
+      "availability": "ausente nesta organização (404)",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/agent-templates/{organizationId}",
+      "group": "agent-templates",
+      "availability": "ausente nesta organização (404)",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/agent-whitelist-whatsapp",
+      "group": "agent-whitelist-whatsapp",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/agent-whitelist-whatsapp/{id}",
+      "group": "agent-whitelist-whatsapp",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/agent-whitelist-whatsapp/{id}",
+      "group": "agent-whitelist-whatsapp",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "PATCH",
+      "path": "/agent-whitelist-whatsapp/{id}",
+      "group": "agent-whitelist-whatsapp",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/agents",
+      "group": "agents",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/agents/{agentId}/tools",
+      "group": "agents",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/agents/{agentId}/tools",
+      "group": "agents",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "PATCH",
+      "path": "/agents/{agentId}/tools/{toolId}",
+      "group": "agents",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/agents/{agentId}/tools/{toolId}",
+      "group": "agents",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/agents/{id}",
+      "group": "agents",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "PATCH",
+      "path": "/agents/{id}",
+      "group": "agents",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/agents/{id}",
+      "group": "agents",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/agents/{id}/query",
+      "group": "agents",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "PATCH",
+      "path": "/agents/{id}/webhook",
+      "group": "agents",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/artifact-categories",
+      "group": "artifact-categories",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/artifact-categories",
+      "group": "artifact-categories",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/artifact-categories/{id}",
+      "group": "artifact-categories",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "PUT",
+      "path": "/artifact-categories/{id}",
+      "group": "artifact-categories",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/artifact-categories/{id}",
+      "group": "artifact-categories",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/artifacts",
+      "group": "artifacts",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/artifacts",
+      "group": "artifacts",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/artifacts",
+      "group": "artifacts",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/artifacts/media",
+      "group": "artifacts",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/artifacts/media/upload",
+      "group": "artifacts",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/artifacts/media/{id}",
+      "group": "artifacts",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "PATCH",
+      "path": "/artifacts/media/{id}",
+      "group": "artifacts",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/artifacts/search",
+      "group": "artifacts",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/artifacts/{id}",
+      "group": "artifacts",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "PUT",
+      "path": "/artifacts/{id}",
+      "group": "artifacts",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/artifacts/{id}",
+      "group": "artifacts",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/contacts",
+      "group": "contacts",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/contacts",
+      "group": "contacts",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/contacts/variables",
+      "group": "contacts",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/contacts/variables",
+      "group": "contacts",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "PUT",
+      "path": "/contacts/variables",
+      "group": "contacts",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/contacts/variables",
+      "group": "contacts",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/contacts/{id}",
+      "group": "contacts",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/conversation",
+      "group": "conversation",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/conversation/message/{type}/{value}",
+      "group": "conversation",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/conversation/{conversationId}",
+      "group": "conversation",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/conversation/{conversationId}",
+      "group": "conversation",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/conversation/{conversationId}/messages/{count}",
+      "group": "conversation",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/conversations/export",
+      "group": "conversations",
+      "availability": "ausente nesta organização (404)",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/conversations/history",
+      "group": "conversations",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/conversations/{conversationId}/assign",
+      "group": "conversations",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/conversations/{conversationId}/export",
+      "group": "conversations",
+      "availability": "resposta binária (usar --out)",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/conversations/{conversationId}/message-register",
+      "group": "conversations",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/conversations/{conversationId}/notes",
+      "group": "conversations",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/conversations/{conversationId}/notes",
+      "group": "conversations",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "PUT",
+      "path": "/conversations/{conversationId}/notes/{noteId}",
+      "group": "conversations",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/conversations/{conversationId}/notes/{noteId}",
+      "group": "conversations",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/conversations/{conversationId}/send-audio",
+      "group": "conversations",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/conversations/{conversationId}/set-ai-enabled",
+      "group": "conversations",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/conversations/{conversationId}/set-priority",
+      "group": "conversations",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/conversations/{conversationId}/set-status",
+      "group": "conversations",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/conversations/{conversationId}/tags",
+      "group": "conversations",
+      "availability": "exige sessão do dashboard (401 com API key)",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/conversations/{conversationId}/tags",
+      "group": "conversations",
+      "availability": "exige sessão do dashboard (401 com API key)",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/conversations/{conversationId}/unassign",
+      "group": "conversations",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/crm/conversation/count",
+      "group": "crm",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/crm/conversationLog",
+      "group": "crm",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/crm/conversationLog",
+      "group": "crm",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/crm/conversationLog/{logId}",
+      "group": "crm",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "PUT",
+      "path": "/crm/conversationLog/{logId}",
+      "group": "crm",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "PATCH",
+      "path": "/crm/conversationLog/{logId}",
+      "group": "crm",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/crm/conversationLog/{logId}",
+      "group": "crm",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/crm/events",
+      "group": "crm",
+      "availability": "streaming SSE (usar --stream)",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/crm/scenario",
+      "group": "crm",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/crm/scenario",
+      "group": "crm",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "PUT",
+      "path": "/crm/scenario",
+      "group": "crm",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/crm/scenario",
+      "group": "crm",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/crm/scenario/{scenarioId}/conversation",
+      "group": "crm",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/crm/scenario/{scenarioId}/conversation",
+      "group": "crm",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/crm/step",
+      "group": "crm",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/crm/step",
+      "group": "crm",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "PUT",
+      "path": "/crm/step",
+      "group": "crm",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/crm/step",
+      "group": "crm",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/crm/step/conversation",
+      "group": "crm",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/crm/step/move",
+      "group": "crm",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/datasources",
+      "group": "datasources",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/datasources/list",
+      "group": "datasources",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/datasources/{id}",
+      "group": "datasources",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/datasources/{id}",
+      "group": "datasources",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/datastores",
+      "group": "datastores",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/datastores/list",
+      "group": "datastores",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/datastores/{id}",
+      "group": "datastores",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "PATCH",
+      "path": "/datastores/{id}",
+      "group": "datastores",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/datastores/{id}",
+      "group": "datastores",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/datastores/{id}/query",
+      "group": "datastores",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/dispatches",
+      "group": "dispatches",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/dispatches",
+      "group": "dispatches",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/dispatches",
+      "group": "dispatches",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/dispatches/contacts",
+      "group": "dispatches",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/dispatches/contacts",
+      "group": "dispatches",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/dispatches/contacts",
+      "group": "dispatches",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/dispatches/contacts/link",
+      "group": "dispatches",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/dispatches/contacts/lists",
+      "group": "dispatches",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/dispatches/contacts/lists",
+      "group": "dispatches",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "PUT",
+      "path": "/dispatches/contacts/lists",
+      "group": "dispatches",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/dispatches/contacts/lists",
+      "group": "dispatches",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/dispatches/contacts/{contactId}",
+      "group": "dispatches",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/dispatches/{id}/populate-queue",
+      "group": "dispatches",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/forms/{formId}/chat",
+      "group": "forms",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/mercadolivre/get-products",
+      "group": "mercadolivre",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/mercadolivre/products",
+      "group": "mercadolivre",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/mercadolivre/products/count",
+      "group": "mercadolivre",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/mercadolivre/products/sync",
+      "group": "mercadolivre",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/messages/interactive/location-request",
+      "group": "messages",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/messages/interactive/send-buttons",
+      "group": "messages",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/messages/interactive/send-contact",
+      "group": "messages",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/messages/interactive/send-cta",
+      "group": "messages",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/messages/interactive/send-lists",
+      "group": "messages",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/messages/interactive/send-location",
+      "group": "messages",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/messages/{messageId}",
+      "group": "messages",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/tags",
+      "group": "tags",
+      "availability": "ausente nesta organização (404)",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/tags",
+      "group": "tags",
+      "availability": "ausente nesta organização (404)",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/tags/delete-by-name",
+      "group": "tags",
+      "availability": "ausente nesta organização (404)",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/tags/get-visible-tags",
+      "group": "tags",
+      "availability": "ausente nesta organização (404)",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/twilio/{ownerPhone}/{contactPhone}/message",
+      "group": "twilio",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/variables",
+      "group": "variables",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/variables/{conversationId}",
+      "group": "variables",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/variables/{conversationId}/{varName}",
+      "group": "variables",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/variables/{conversationId}/{varName}",
+      "group": "variables",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/webhook/validate",
+      "group": "webhook",
+      "availability": "ausente nesta organização (404)",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/webhook/webhook",
+      "group": "webhook",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/whatsapp/conversion-tracking",
+      "group": "whatsapp",
+      "availability": "ausente nesta organização (404)",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/whatsapp/templates",
+      "group": "whatsapp",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/whatsapp/templates",
+      "group": "whatsapp",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/whatsapp/{phoneNumberId}/template-message",
+      "group": "whatsapp",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/zapi/{instanceId}/{contactPhone}/message",
+      "group": "zapi",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/zapper/instances/{id}/message",
+      "group": "zapper",
+      "availability": "disponível",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/agents/models",
+      "group": "agents",
+      "availability": "disponível (público, não exige auth)",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/contacts/available-variables",
+      "group": "contacts",
+      "availability": "disponível (existe ao vivo, fora do openapi publicado)",
+      "documented": false
+    }
+  ]
+}
