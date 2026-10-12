@@ -6,3 +6,5 @@
 
 # Probe local (saida crua da API)
 tests/probe/
+*.pyc
+__pycache__/
