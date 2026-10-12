@@ -1,0 +1,263 @@
+{
+  "skill": "mercadolivre",
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/mercadolivre/products",
+      "query": {
+        "agentId": "agent-1",
+        "serviceProviderId": "sp-404",
+        "page": "1",
+        "perPage": "50"
+      },
+      "status": 404,
+      "body": {
+        "error": "Mercado Livre service provider not found"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/mercadolivre/products",
+      "query": {
+        "agentId": "agent-1",
+        "serviceProviderId": "ml-sp-1",
+        "page": "1",
+        "perPage": "50"
+      },
+      "status": 200,
+      "body": {
+        "products": [
+          {
+            "id": "MLB123456",
+            "title": "Panela de Pressão 4,5L",
+            "price": 199.9,
+            "currency_id": "BRL",
+            "condition": "new",
+            "permalink": "https://produto.mercadolivre.com.br/MLB-123456",
+            "available_quantity": 12,
+            "sold_quantity": 3,
+            "status": "active"
+          }
+        ],
+        "total": 1,
+        "page": 1,
+        "perPage": 50
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/mercadolivre/products/count",
+      "query": {
+        "agentId": "agent-1"
+      },
+      "status": 200,
+      "body": {
+        "count": 42
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/mercadolivre/products/count",
+      "status": 200,
+      "body": {
+        "count": 54721
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/mercadolivre/products/sync",
+      "query": {
+        "agentId": "agent-1"
+      },
+      "status": 200,
+      "body": {
+        "success": true,
+        "message": "Sincronização iniciada"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/mercadolivre/products/sync",
+      "query": {
+        "agentId": "agent-erro"
+      },
+      "status": 400,
+      "body": {
+        "error": "INVALID_REQUEST"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/mercadolivre/get-products",
+      "query": {
+        "agentId": "agent-1",
+        "query": "panela",
+        "maxResults": "5"
+      },
+      "status": 200,
+      "body": {
+        "products": [
+          {
+            "id": "MLB123456",
+            "title": "Panela de Pressão 4,5L",
+            "price": 199.9,
+            "currency_id": "BRL",
+            "permalink": "https://produto.mercadolivre.com.br/MLB-123456"
+          },
+          {
+            "id": "MLB654321",
+            "title": "Panela antiaderente 24cm",
+            "price": 89.9,
+            "currency_id": "BRL",
+            "permalink": "https://produto.mercadolivre.com.br/MLB-654321"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/mercadolivre/get-products",
+      "query": {
+        "agentId": "agent-sem-ml"
+      },
+      "status": 404,
+      "body": {
+        "error": "Mercado Livre service provider not found for this agent"
+      }
+    }
+  ],
+  "smoke": [
+    {
+      "desc": "mercadolivre/list-products.sh --help",
+      "cmd": "./mercadolivre/scripts/list-products.sh --help",
+      "expect_out": "Uso: list-products.sh",
+      "expect_exit": 0
+    },
+    {
+      "desc": "mercadolivre/count-products.sh --help",
+      "cmd": "./mercadolivre/scripts/count-products.sh --help",
+      "expect_out": "Uso: count-products.sh",
+      "expect_exit": 0
+    },
+    {
+      "desc": "mercadolivre/sync-products.sh --help",
+      "cmd": "./mercadolivre/scripts/sync-products.sh --help",
+      "expect_out": "Uso: sync-products.sh",
+      "expect_exit": 0
+    },
+    {
+      "desc": "mercadolivre/get-products.sh --help",
+      "cmd": "./mercadolivre/scripts/get-products.sh --help",
+      "expect_out": "Uso: get-products.sh",
+      "expect_exit": 0
+    },
+    {
+      "desc": "mercadolivre/list-products.sh (agente + service provider)",
+      "cmd": "./mercadolivre/scripts/list-products.sh stub-key agent-1 --service-provider ml-sp-1",
+      "expect_out": "Panela de Pressão 4,5L",
+      "expect_exit": 0
+    },
+    {
+      "desc": "mercadolivre/list-products.sh --full (envelope com total/perPage)",
+      "cmd": "./mercadolivre/scripts/list-products.sh stub-key agent-1 --service-provider ml-sp-1 --full",
+      "expect_out": "\"perPage\": 50",
+      "expect_exit": 0
+    },
+    {
+      "desc": "mercadolivre/list-products.sh sem --service-provider -> exit 1",
+      "cmd": "./mercadolivre/scripts/list-products.sh stub-key agent-1",
+      "expect_out": "service-provider é obrigatório",
+      "expect_exit": 1
+    },
+    {
+      "desc": "mercadolivre/list-products.sh service provider inexistente -> 404",
+      "cmd": "./mercadolivre/scripts/list-products.sh stub-key agent-1 --service-provider sp-404",
+      "expect_out": "HTTP 404",
+      "expect_exit": 1
+    },
+    {
+      "desc": "mercadolivre/count-products.sh (agente-1 -> 42)",
+      "cmd": "./mercadolivre/scripts/count-products.sh stub-key agent-1",
+      "expect_out": "42",
+      "expect_exit": 0
+    },
+    {
+      "desc": "mercadolivre/count-products.sh (sem agente -> total da organizacao)",
+      "cmd": "./mercadolivre/scripts/count-products.sh stub-key",
+      "expect_out": "54721",
+      "expect_exit": 0
+    },
+    {
+      "desc": "mercadolivre/count-products.sh sem API key -> exit 1",
+      "cmd": "./mercadolivre/scripts/count-products.sh",
+      "expect_out": "API key",
+      "expect_exit": 1
+    },
+    {
+      "desc": "mercadolivre/count-products.sh key invalida -> exit 1",
+      "cmd": "./mercadolivre/scripts/count-products.sh key-errada agent-1",
+      "expect_out": "não autorizado",
+      "expect_exit": 1
+    },
+    {
+      "desc": "mercadolivre/sync-products.sh --yes",
+      "cmd": "./mercadolivre/scripts/sync-products.sh stub-key --agent agent-1 --yes",
+      "expect_out": "Sincronização iniciada",
+      "expect_exit": 0
+    },
+    {
+      "desc": "mercadolivre/sync-products.sh sem --yes -> exit 1",
+      "cmd": "./mercadolivre/scripts/sync-products.sh stub-key --agent agent-1",
+      "expect_out": "confirme com --yes",
+      "expect_exit": 1
+    },
+    {
+      "desc": "mercadolivre/sync-products.sh erro 400 da API",
+      "cmd": "./mercadolivre/scripts/sync-products.sh stub-key --agent agent-erro --yes",
+      "expect_out": "HTTP 400",
+      "expect_exit": 1
+    },
+    {
+      "desc": "mercadolivre/get-products.sh com filtros (query/maxResults)",
+      "cmd": "./mercadolivre/scripts/get-products.sh stub-key agent-1 --query panela --max-results 5",
+      "expect_out": "Panela antiaderente 24cm",
+      "expect_exit": 0
+    },
+    {
+      "desc": "mercadolivre/get-products.sh sem agent-id -> exit 1",
+      "cmd": "./mercadolivre/scripts/get-products.sh stub-key",
+      "expect_out": "agent-id",
+      "expect_exit": 1
+    },
+    {
+      "desc": "mercadolivre/get-products.sh booleano invalido -> exit 1",
+      "cmd": "./mercadolivre/scripts/get-products.sh stub-key agent-1 --sort-by-relevance sim",
+      "expect_out": "true ou false",
+      "expect_exit": 1
+    },
+    {
+      "desc": "mercadolivre/get-products.sh 404 service provider not found (tratado)",
+      "cmd": "./mercadolivre/scripts/get-products.sh stub-key agent-sem-ml",
+      "expect_out": "não tem integração do Mercado Livre conectada",
+      "expect_exit": 1
+    }
+  ],
+  "live": [
+    {
+      "desc": "live mercadolivre/count-products.sh (total da organizacao)",
+      "cmd": "./mercadolivre/scripts/count-products.sh \"$CHATVOLT_API_KEY\"",
+      "expect_out": "Total de produtos do Mercado Livre"
+    },
+    {
+      "desc": "live mercadolivre/count-products.sh (escopo do agente)",
+      "cmd": "./mercadolivre/scripts/count-products.sh \"$CHATVOLT_API_KEY\" \"$CHATVOLT_AGENT_ID\"",
+      "expect_out": "Total de produtos do Mercado Livre"
+    },
+    {
+      "desc": "live mercadolivre/get-products.sh (404 service provider not found, tratado)",
+      "cmd": "./mercadolivre/scripts/get-products.sh \"$CHATVOLT_API_KEY\" \"$CHATVOLT_AGENT_ID\"",
+      "expect_out": "não tem integração do Mercado Livre conectada",
+      "expect_exit": 1
+    }
+  ]
+}

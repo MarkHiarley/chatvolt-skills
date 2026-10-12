@@ -1,0 +1,571 @@
+{
+  "skill": "artifacts",
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/artifacts",
+      "status": 200,
+      "body": {
+        "data": [
+          {
+            "id": "art-1",
+            "organizationId": "org-stub",
+            "name": "Relatório OMP Stub",
+            "description": "artefato de teste offline",
+            "price": 12.5,
+            "currency": null,
+            "externalUrl": null,
+            "customJson": null,
+            "categoryId": "cat-1",
+            "isActive": true,
+            "createdAt": "2026-10-01T10:00:00.000Z",
+            "updatedAt": "2026-10-01T10:00:00.000Z",
+            "category": {
+              "id": "cat-1",
+              "organizationId": "org-stub",
+              "name": "fotos",
+              "description": "categoria stub",
+              "parentId": null,
+              "isActive": true,
+              "createdAt": "2026-10-01T09:00:00.000Z",
+              "updatedAt": "2026-10-01T09:00:00.000Z"
+            },
+            "media": [],
+            "_count": { "media": 0 }
+          }
+        ],
+        "total": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/artifacts",
+      "status": 200,
+      "body": {
+        "id": "art-nova-1",
+        "organizationId": "org-stub",
+        "name": "Artefato OMP Novo",
+        "description": "criado no stub",
+        "price": null,
+        "externalUrl": null,
+        "customJson": null,
+        "categoryId": "cat-1",
+        "isActive": true,
+        "createdAt": "2026-10-12T10:00:00.000Z",
+        "updatedAt": "2026-10-12T10:00:00.000Z",
+        "media": []
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/artifacts",
+      "status": 200,
+      "body": { "count": 2, "message": "Artifacts deleted." }
+    },
+    {
+      "method": "GET",
+      "path": "/artifacts/search",
+      "status": 200,
+      "body": {
+        "data": [
+          {
+            "id": "art-1",
+            "organizationId": "org-stub",
+            "name": "Relatório OMP Stub",
+            "description": "artefato de teste offline",
+            "price": 12.5,
+            "externalUrl": null,
+            "customJson": null,
+            "categoryId": "cat-1",
+            "isActive": true,
+            "createdAt": "2026-10-01T10:00:00.000Z",
+            "updatedAt": "2026-10-01T10:00:00.000Z",
+            "category": {
+              "id": "cat-1",
+              "organizationId": "org-stub",
+              "name": "fotos",
+              "description": "categoria stub",
+              "parentId": null,
+              "isActive": true,
+              "createdAt": "2026-10-01T09:00:00.000Z",
+              "updatedAt": "2026-10-01T09:00:00.000Z",
+              "parent": null
+            }
+          }
+        ],
+        "meta": { "total": 1, "page": 1, "limit": 20, "totalPages": 1, "maxMedias": 10 }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/artifacts/art-1",
+      "status": 200,
+      "body": {
+        "id": "art-1",
+        "organizationId": "org-stub",
+        "name": "Relatório OMP Stub",
+        "description": "artefato de teste offline",
+        "price": 12.5,
+        "currency": null,
+        "externalUrl": null,
+        "customJson": null,
+        "categoryId": "cat-1",
+        "isActive": true,
+        "createdAt": "2026-10-01T10:00:00.000Z",
+        "updatedAt": "2026-10-01T10:00:00.000Z",
+        "category": {
+          "id": "cat-1",
+          "organizationId": "org-stub",
+          "name": "fotos",
+          "description": "categoria stub",
+          "parentId": null,
+          "isActive": true,
+          "createdAt": "2026-10-01T09:00:00.000Z",
+          "updatedAt": "2026-10-01T09:00:00.000Z"
+        },
+        "media": []
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/artifacts/art-1",
+      "status": 200,
+      "body": {
+        "id": "art-1",
+        "organizationId": "org-stub",
+        "name": "Relatório OMP Stub (atualizado)",
+        "description": "artefato de teste offline",
+        "price": 12.5,
+        "externalUrl": null,
+        "customJson": null,
+        "categoryId": "cat-1",
+        "isActive": true,
+        "createdAt": "2026-10-01T10:00:00.000Z",
+        "updatedAt": "2026-10-12T10:30:00.000Z"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/artifacts/art-1",
+      "status": 200,
+      "body": {
+        "id": "art-1",
+        "name": "Relatório OMP Stub",
+        "categoryId": "cat-1",
+        "isActive": true,
+        "createdAt": "2026-10-01T10:00:00.000Z",
+        "updatedAt": "2026-10-01T10:00:00.000Z"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/artifact-categories",
+      "status": 200,
+      "body": [
+        {
+          "id": "cat-1",
+          "organizationId": "org-stub",
+          "name": "fotos",
+          "description": "categoria stub",
+          "parentId": null,
+          "isActive": true,
+          "createdAt": "2026-10-01T09:00:00.000Z",
+          "updatedAt": "2026-10-01T09:00:00.000Z",
+          "_count": { "artifacts": 1 },
+          "parent": null,
+          "children": []
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/artifact-categories",
+      "status": 200,
+      "body": {
+        "id": "cat-nova-1",
+        "organizationId": "org-stub",
+        "name": "Relatórios",
+        "description": null,
+        "parentId": null,
+        "isActive": true,
+        "createdAt": "2026-10-12T11:00:00.000Z",
+        "updatedAt": "2026-10-12T11:00:00.000Z"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/artifact-categories/cat-1",
+      "status": 200,
+      "body": {
+        "id": "cat-1",
+        "organizationId": "org-stub",
+        "name": "fotos",
+        "description": "categoria stub",
+        "parentId": null,
+        "isActive": true,
+        "createdAt": "2026-10-01T09:00:00.000Z",
+        "updatedAt": "2026-10-01T09:00:00.000Z"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/artifact-categories/cat-1",
+      "status": 200,
+      "body": {
+        "id": "cat-1",
+        "organizationId": "org-stub",
+        "name": "fotos-e-videos",
+        "description": "categoria stub",
+        "parentId": null,
+        "isActive": true,
+        "createdAt": "2026-10-01T09:00:00.000Z",
+        "updatedAt": "2026-10-12T11:10:00.000Z"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/artifact-categories/cat-1",
+      "status": 200,
+      "body": { "message": "Category deleted." }
+    },
+    {
+      "method": "GET",
+      "path": "/artifacts/media",
+      "query": { "artifact_id": "art-1" },
+      "status": 200,
+      "body": [
+        {
+          "id": "media-1",
+          "organizationId": "org-stub",
+          "artifactId": "art-1",
+          "mediaType": "VIDEO",
+          "name": "vídeo-omp.mp4",
+          "s3Key": "organizations/org-stub/artifacts/art-1/video.mp4",
+          "s3Url": "https://exemplo.test/art-1/video.mp4",
+          "altDescription": "vídeo de teste",
+          "isActive": true,
+          "createdAt": "2026-10-01T11:00:00.000Z",
+          "updatedAt": "2026-10-01T11:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/artifacts/media/upload",
+      "status": 200,
+      "body": {
+        "s3Key": "organizations/org-stub/artifacts/art-1/doc.txt",
+        "fileUrl": "https://exemplo.test/art-1/doc.txt",
+        "artifactMedia": {
+          "id": "media-2",
+          "organizationId": "org-stub",
+          "artifactId": "art-1",
+          "mediaType": "DOCUMENT",
+          "name": "doc.txt",
+          "s3Key": "organizations/org-stub/artifacts/art-1/doc.txt",
+          "s3Url": "https://exemplo.test/art-1/doc.txt",
+          "altDescription": null,
+          "isActive": true,
+          "createdAt": "2026-10-12T11:20:00.000Z",
+          "updatedAt": "2026-10-12T11:20:00.000Z"
+        }
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/artifacts/media/media-1",
+      "status": 200,
+      "body": {
+        "id": "media-1",
+        "organizationId": "org-stub",
+        "artifactId": "art-1",
+        "mediaType": "VIDEO",
+        "name": "vídeo-omp.mp4",
+        "s3Key": "organizations/org-stub/artifacts/art-1/video.mp4",
+        "s3Url": "https://exemplo.test/art-1/video.mp4",
+        "altDescription": "descrição atualizada no stub",
+        "isActive": true,
+        "createdAt": "2026-10-01T11:00:00.000Z",
+        "updatedAt": "2026-10-12T11:30:00.000Z"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/artifacts/media/media-1",
+      "status": 200,
+      "body": { "success": true }
+    }
+  ],
+  "smoke": [
+    {
+      "desc": "artifacts/list-artifacts.sh (lista com {data,total})",
+      "cmd": "./artifacts/scripts/list-artifacts.sh stub-key --limit 10",
+      "expect_out": "Relatório OMP Stub"
+    },
+    {
+      "desc": "artifacts/list-artifacts.sh --search",
+      "cmd": "./artifacts/scripts/list-artifacts.sh stub-key --search fotos --limit 10",
+      "expect_out": "Total: 1"
+    },
+    {
+      "desc": "artifacts/list-artifacts.sh --all",
+      "cmd": "./artifacts/scripts/list-artifacts.sh stub-key --all",
+      "expect_out": "paginação concluída"
+    },
+    {
+      "desc": "artifacts/list-artifacts.sh --limit inválido -> exit 1",
+      "cmd": "./artifacts/scripts/list-artifacts.sh stub-key --limit 0",
+      "expect_out": "entre 1 e 100",
+      "expect_exit": 1
+    },
+    {
+      "desc": "artifacts/list-artifacts.sh key inválida -> exit 1",
+      "cmd": "./artifacts/scripts/list-artifacts.sh key-errada",
+      "expect_out": "não autorizado",
+      "expect_exit": 1
+    },
+    {
+      "desc": "artifacts/list-artifacts.sh --help",
+      "cmd": "./artifacts/scripts/list-artifacts.sh --help",
+      "expect_out": "GET /artifacts"
+    },
+    {
+      "desc": "artifacts/get-artifact.sh (objeto na raiz)",
+      "cmd": "./artifacts/scripts/get-artifact.sh stub-key art-1",
+      "expect_out": "Relatório OMP Stub"
+    },
+    {
+      "desc": "artifacts/get-artifact.sh --media (GET /artifacts/media)",
+      "cmd": "./artifacts/scripts/get-artifact.sh stub-key art-1 --media",
+      "expect_out": "vídeo-omp.mp4"
+    },
+    {
+      "desc": "artifacts/get-artifact.sh CV_JSON=1 (somente JSON em stdout)",
+      "cmd": "CV_JSON=1 ./artifacts/scripts/get-artifact.sh stub-key art-1 | python3 -c 'import json,sys; a=json.load(sys.stdin); print(\"PASS\" if a[\"id\"]==\"art-1\" and a[\"category\"][\"name\"]==\"fotos\" else \"FAIL\")'",
+      "expect_out": "PASS"
+    },
+    {
+      "desc": "artifacts/get-artifact.sh sem id -> exit 1",
+      "cmd": "./artifacts/scripts/get-artifact.sh stub-key",
+      "expect_out": "informe o id do artefato",
+      "expect_exit": 1
+    },
+    {
+      "desc": "artifacts/get-artifact.sh id inexistente -> 404 exit 1",
+      "cmd": "./artifacts/scripts/get-artifact.sh stub-key nao-existe",
+      "expect_out": "não encontrado",
+      "expect_exit": 1
+    },
+    {
+      "desc": "artifacts/create-artifact.sh (POST /artifacts)",
+      "cmd": "./artifacts/scripts/create-artifact.sh stub-key --name 'Artefato OMP Novo' --category cat-1 --price 9.9",
+      "expect_out": "Artefato criado"
+    },
+    {
+      "desc": "artifacts/create-artifact.sh sem --category -> exit 1",
+      "cmd": "./artifacts/scripts/create-artifact.sh stub-key --name 'Sem categoria'",
+      "expect_out": "obrigatório",
+      "expect_exit": 1
+    },
+    {
+      "desc": "artifacts/create-artifact.sh --json inválido -> exit 1",
+      "cmd": "./artifacts/scripts/create-artifact.sh stub-key --name X --category cat-1 --json '{invalido'",
+      "expect_out": "JSON válido",
+      "expect_exit": 1
+    },
+    {
+      "desc": "artifacts/update-artifact.sh (PUT com merge do estado atual)",
+      "cmd": "./artifacts/scripts/update-artifact.sh stub-key art-1 --name 'Relatório OMP Stub (atualizado)'",
+      "expect_out": "Relatório OMP Stub (atualizado)"
+    },
+    {
+      "desc": "artifacts/update-artifact.sh sem campos -> exit 1",
+      "cmd": "./artifacts/scripts/update-artifact.sh stub-key art-1",
+      "expect_out": "informe ao menos um campo",
+      "expect_exit": 1
+    },
+    {
+      "desc": "artifacts/update-artifact.sh key inválida -> exit 1",
+      "cmd": "./artifacts/scripts/update-artifact.sh key-errada art-1 --name X",
+      "expect_out": "não autorizado",
+      "expect_exit": 1
+    },
+    {
+      "desc": "artifacts/delete-artifact.sh (DELETE /artifacts/{id})",
+      "cmd": "./artifacts/scripts/delete-artifact.sh stub-key art-1",
+      "expect_out": "Relatório OMP Stub"
+    },
+    {
+      "desc": "artifacts/delete-artifact.sh --toggle (action=toggle)",
+      "cmd": "./artifacts/scripts/delete-artifact.sh stub-key art-1 --toggle",
+      "expect_out": "ativo:"
+    },
+    {
+      "desc": "artifacts/delete-artifact.sh --ids (DELETE /artifacts em lote)",
+      "cmd": "./artifacts/scripts/delete-artifact.sh stub-key --ids art-1,art-2",
+      "expect_out": "Artefatos deletados: 2"
+    },
+    {
+      "desc": "artifacts/delete-artifact.sh --ids + --toggle -> exit 1",
+      "cmd": "./artifacts/scripts/delete-artifact.sh stub-key --ids art-1 --toggle",
+      "expect_out": "só funciona com um único artefato",
+      "expect_exit": 1
+    },
+    {
+      "desc": "artifacts/delete-artifact.sh sem id -> exit 1",
+      "cmd": "./artifacts/scripts/delete-artifact.sh stub-key",
+      "expect_out": "informe o id do artefato",
+      "expect_exit": 1
+    },
+    {
+      "desc": "artifacts/search-artifacts.sh (GET /artifacts/search)",
+      "cmd": "./artifacts/scripts/search-artifacts.sh stub-key --q fotos --limit 10",
+      "expect_out": "página 1 de 1"
+    },
+    {
+      "desc": "artifacts/search-artifacts.sh --all (meta.totalPages)",
+      "cmd": "./artifacts/scripts/search-artifacts.sh stub-key --q fotos --all",
+      "expect_out": "paginação concluída"
+    },
+    {
+      "desc": "artifacts/search-artifacts.sh --media-types inválido -> exit 1",
+      "cmd": "./artifacts/scripts/search-artifacts.sh stub-key --media-types BOGUS",
+      "expect_out": "--media-types inválido",
+      "expect_exit": 1
+    },
+    {
+      "desc": "artifacts/search-artifacts.sh key inválida -> exit 1",
+      "cmd": "./artifacts/scripts/search-artifacts.sh key-errada --q x",
+      "expect_out": "não autorizado",
+      "expect_exit": 1
+    },
+    {
+      "desc": "artifacts/categories.sh list (array na raiz)",
+      "cmd": "./artifacts/scripts/categories.sh stub-key list",
+      "expect_out": "fotos"
+    },
+    {
+      "desc": "artifacts/categories.sh get",
+      "cmd": "./artifacts/scripts/categories.sh stub-key get cat-1",
+      "expect_out": "Categoria pai"
+    },
+    {
+      "desc": "artifacts/categories.sh create",
+      "cmd": "./artifacts/scripts/categories.sh stub-key create --name 'Relatórios'",
+      "expect_out": "Relatórios"
+    },
+    {
+      "desc": "artifacts/categories.sh create sem --name -> exit 1",
+      "cmd": "./artifacts/scripts/categories.sh stub-key create --description 'sem nome'",
+      "expect_out": "obrigatório para criar",
+      "expect_exit": 1
+    },
+    {
+      "desc": "artifacts/categories.sh update",
+      "cmd": "./artifacts/scripts/categories.sh stub-key update cat-1 --name fotos-e-videos",
+      "expect_out": "fotos-e-videos"
+    },
+    {
+      "desc": "artifacts/categories.sh delete",
+      "cmd": "./artifacts/scripts/categories.sh stub-key delete cat-1",
+      "expect_out": "Category deleted."
+    },
+    {
+      "desc": "artifacts/categories.sh subcomando desconhecido -> exit 1",
+      "cmd": "./artifacts/scripts/categories.sh stub-key remover",
+      "expect_out": "subcomando desconhecido",
+      "expect_exit": 1
+    },
+    {
+      "desc": "artifacts/categories.sh key inválida -> exit 1",
+      "cmd": "./artifacts/scripts/categories.sh key-errada list",
+      "expect_out": "não autorizado",
+      "expect_exit": 1
+    },
+    {
+      "desc": "artifacts/media.sh list --artifact",
+      "cmd": "./artifacts/scripts/media.sh stub-key list --artifact art-1",
+      "expect_out": "vídeo-omp.mp4"
+    },
+    {
+      "desc": "artifacts/media.sh list sem --artifact -> exit 1",
+      "cmd": "./artifacts/scripts/media.sh stub-key list",
+      "expect_out": "exige --artifact",
+      "expect_exit": 1
+    },
+    {
+      "desc": "artifacts/media.sh list --type inválido -> exit 1",
+      "cmd": "./artifacts/scripts/media.sh stub-key list --artifact art-1 --type BOGUS",
+      "expect_out": "--type inválido",
+      "expect_exit": 1
+    },
+    {
+      "desc": "artifacts/media.sh upload --file (multipart)",
+      "cmd": "f=$(mktemp); printf 'conteudo de teste' > \"$f\"; ./artifacts/scripts/media.sh stub-key upload --artifact art-1 --file \"$f\" --name doc.txt; rc=$?; rm -f \"$f\"; exit $rc",
+      "expect_out": "Mídia enviada"
+    },
+    {
+      "desc": "artifacts/media.sh upload sem --file -> exit 1",
+      "cmd": "./artifacts/scripts/media.sh stub-key upload --artifact art-1",
+      "expect_out": "exige --file",
+      "expect_exit": 1
+    },
+    {
+      "desc": "artifacts/media.sh update (PATCH parcial)",
+      "cmd": "./artifacts/scripts/media.sh stub-key update media-1 --alt 'descrição atualizada no stub'",
+      "expect_out": "descrição atualizada no stub"
+    },
+    {
+      "desc": "artifacts/media.sh update sem campos -> exit 1",
+      "cmd": "./artifacts/scripts/media.sh stub-key update media-1",
+      "expect_out": "informe ao menos um campo",
+      "expect_exit": 1
+    },
+    {
+      "desc": "artifacts/media.sh delete",
+      "cmd": "./artifacts/scripts/media.sh stub-key delete media-1",
+      "expect_out": "Mídia deletada"
+    },
+    {
+      "desc": "artifacts/media.sh delete key inválida -> exit 1",
+      "cmd": "./artifacts/scripts/media.sh key-errada delete media-1",
+      "expect_out": "não autorizado",
+      "expect_exit": 1
+    },
+    {
+      "desc": "artifacts/media.sh --help",
+      "cmd": "./artifacts/scripts/media.sh --help",
+      "expect_out": "/artifacts/media/upload"
+    }
+  ],
+  "live": [
+    {
+      "desc": "live artifacts/list-artifacts.sh",
+      "cmd": "./artifacts/scripts/list-artifacts.sh \"$CHATVOLT_API_KEY\" --limit 2 >/dev/null"
+    },
+    {
+      "desc": "live artifacts/search-artifacts.sh",
+      "cmd": "./artifacts/scripts/search-artifacts.sh \"$CHATVOLT_API_KEY\" --limit 1 >/dev/null"
+    },
+    {
+      "desc": "live artifacts/categories.sh list",
+      "cmd": "./artifacts/scripts/categories.sh \"$CHATVOLT_API_KEY\" list >/dev/null"
+    },
+    {
+      "desc": "live artifacts/get-artifact.sh (id vindo da listagem)",
+      "cmd": "id=$(CV_JSON=1 ./artifacts/scripts/list-artifacts.sh \"$CHATVOLT_API_KEY\" --limit 1 | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d[0][\"id\"] if d else \"\")'); if [ -n \"$id\" ]; then ./artifacts/scripts/get-artifact.sh \"$CHATVOLT_API_KEY\" \"$id\" >/dev/null; else echo \"sem artefatos\"; fi"
+    },
+    {
+      "desc": "live artifacts/get-artifact.sh --media",
+      "cmd": "id=$(CV_JSON=1 ./artifacts/scripts/list-artifacts.sh \"$CHATVOLT_API_KEY\" --limit 1 | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d[0][\"id\"] if d else \"\")'); if [ -n \"$id\" ]; then ./artifacts/scripts/get-artifact.sh \"$CHATVOLT_API_KEY\" \"$id\" --media >/dev/null; else echo \"sem artefatos\"; fi"
+    },
+    {
+      "desc": "live artifacts/media.sh list (artifact_id vindo da listagem)",
+      "cmd": "id=$(CV_JSON=1 ./artifacts/scripts/list-artifacts.sh \"$CHATVOLT_API_KEY\" --limit 1 | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d[0][\"id\"] if d else \"\")'); if [ -n \"$id\" ]; then ./artifacts/scripts/media.sh \"$CHATVOLT_API_KEY\" list --artifact \"$id\" >/dev/null; else echo \"sem artefatos\"; fi"
+    },
+    {
+      "desc": "live artifacts/categories.sh get (id vindo da listagem)",
+      "cmd": "id=$(CV_JSON=1 ./artifacts/scripts/categories.sh \"$CHATVOLT_API_KEY\" list | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d[0][\"id\"] if d else \"\")'); if [ -n \"$id\" ]; then ./artifacts/scripts/categories.sh \"$CHATVOLT_API_KEY\" get \"$id\" >/dev/null; else echo \"sem categorias\"; fi"
+    }
+  ]
+}

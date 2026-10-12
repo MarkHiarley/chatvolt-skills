@@ -1,0 +1,186 @@
+{
+  "skill": "tags",
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/tags",
+      "status": 200,
+      "body": {
+        "data": [
+          { "id": "tag-1", "name": "urgente", "color": "red" },
+          { "id": "tag-2", "name": "suporte", "color": "blue" }
+        ],
+        "success": true,
+        "error": null
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/tags",
+      "status": 200,
+      "body": {
+        "data": { "id": "tag-3", "name": "financeiro", "color": "green" },
+        "success": true,
+        "error": null
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/tags/delete-by-name",
+      "status": 200,
+      "body": {
+        "data": { "id": "tag-1", "name": "urgente", "color": "red" },
+        "success": true,
+        "error": null
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/tags/get-visible-tags",
+      "status": 200,
+      "body": {
+        "data": [
+          { "id": "tag-1", "name": "urgente", "color": "red" }
+        ],
+        "success": true,
+        "error": null
+      }
+    }
+  ],
+  "smoke": [
+    {
+      "desc": "tags/list-tags.sh (caminho feliz)",
+      "cmd": "./tags/scripts/list-tags.sh stub-key",
+      "expect_out": "urgente",
+      "expect_exit": 0
+    },
+    {
+      "desc": "tags/list-tags.sh --help",
+      "cmd": "./tags/scripts/list-tags.sh --help",
+      "expect_out": "Uso: list-tags.sh",
+      "expect_exit": 0
+    },
+    {
+      "desc": "tags/list-tags.sh CV_JSON=1 (contrato {data:[...]} desembrulhado)",
+      "cmd": "CV_JSON=1 ./tags/scripts/list-tags.sh stub-key | python3 -c 'import json,sys; d=json.load(sys.stdin); assert isinstance(d,list) and [t[\"name\"] for t in d]==[\"urgente\",\"suporte\"], d; print(\"TAGS_JSON_OK\")'",
+      "expect_out": "TAGS_JSON_OK",
+      "expect_exit": 0
+    },
+    {
+      "desc": "tags/list-tags.sh explica 404 de rota ausente (mesmo caminho do 404 real do ambiente)",
+      "cmd": "CV_API_BASE=\"$CV_API_BASE/rota-ausente\" ./tags/scripts/list-tags.sh stub-key",
+      "expect_out": "não é exposta neste plano/organização",
+      "expect_exit": 1
+    },
+    {
+      "desc": "tags/create-tag.sh (caminho feliz)",
+      "cmd": "./tags/scripts/create-tag.sh stub-key --name financeiro --color green",
+      "expect_out": "financeiro",
+      "expect_exit": 0
+    },
+    {
+      "desc": "tags/create-tag.sh --help",
+      "cmd": "./tags/scripts/create-tag.sh --help",
+      "expect_out": "Uso: create-tag.sh",
+      "expect_exit": 0
+    },
+    {
+      "desc": "tags/create-tag.sh sem --name (validação)",
+      "cmd": "./tags/scripts/create-tag.sh stub-key --color red",
+      "expect_out": "informe --name",
+      "expect_exit": 1
+    },
+    {
+      "desc": "tags/create-tag.sh --json inválido (validação)",
+      "cmd": "./tags/scripts/create-tag.sh stub-key --name vip --json '{invalido'",
+      "expect_out": "--json não é JSON válido",
+      "expect_exit": 1
+    },
+    {
+      "desc": "tags/create-tag.sh explica 404 de rota ausente",
+      "cmd": "CV_API_BASE=\"$CV_API_BASE/rota-ausente\" ./tags/scripts/create-tag.sh stub-key --name urgente",
+      "expect_out": "não é exposta neste plano/organização",
+      "expect_exit": 1
+    },
+    {
+      "desc": "tags/delete-tag.sh (caminho feliz, --yes)",
+      "cmd": "./tags/scripts/delete-tag.sh stub-key urgente --yes",
+      "expect_out": "removida",
+      "expect_exit": 0
+    },
+    {
+      "desc": "tags/delete-tag.sh CV_JSON=1 (contrato)",
+      "cmd": "CV_JSON=1 ./tags/scripts/delete-tag.sh stub-key urgente --yes | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d[\"name\"]==\"urgente\" and d[\"success\"] is True, d; print(\"TAGS_DEL_JSON_OK\")'",
+      "expect_out": "TAGS_DEL_JSON_OK",
+      "expect_exit": 0
+    },
+    {
+      "desc": "tags/delete-tag.sh --help",
+      "cmd": "./tags/scripts/delete-tag.sh --help",
+      "expect_out": "Uso: delete-tag.sh",
+      "expect_exit": 0
+    },
+    {
+      "desc": "tags/delete-tag.sh sem nome (validação)",
+      "cmd": "./tags/scripts/delete-tag.sh stub-key",
+      "expect_out": "informe o <nome>",
+      "expect_exit": 1
+    },
+    {
+      "desc": "tags/delete-tag.sh explica 404 de rota ausente",
+      "cmd": "CV_API_BASE=\"$CV_API_BASE/rota-ausente\" ./tags/scripts/delete-tag.sh stub-key urgente --yes",
+      "expect_out": "não é exposta neste plano/organização",
+      "expect_exit": 1
+    },
+    {
+      "desc": "tags/visible-tags.sh (caminho feliz)",
+      "cmd": "./tags/scripts/visible-tags.sh stub-key",
+      "expect_out": "urgente",
+      "expect_exit": 0
+    },
+    {
+      "desc": "tags/visible-tags.sh --help",
+      "cmd": "./tags/scripts/visible-tags.sh --help",
+      "expect_out": "Uso: visible-tags.sh",
+      "expect_exit": 0
+    },
+    {
+      "desc": "tags/visible-tags.sh CV_JSON=1 (contrato)",
+      "cmd": "CV_JSON=1 ./tags/scripts/visible-tags.sh stub-key | python3 -c 'import json,sys; d=json.load(sys.stdin); assert isinstance(d,list) and len(d)==1 and d[0][\"name\"]==\"urgente\", d; print(\"TAGS_VIS_JSON_OK\")'",
+      "expect_out": "TAGS_VIS_JSON_OK",
+      "expect_exit": 0
+    },
+    {
+      "desc": "tags/visible-tags.sh explica 404 de rota ausente",
+      "cmd": "CV_API_BASE=\"$CV_API_BASE/rota-ausente\" ./tags/scripts/visible-tags.sh stub-key",
+      "expect_out": "não é exposta neste plano/organização",
+      "expect_exit": 1
+    }
+  ],
+  "live": [
+    {
+      "desc": "live tags/list-tags.sh (404 explicado neste ambiente; passa se a rota voltar a existir)",
+      "cmd": "CV_TIMEOUT=6 ./tags/scripts/list-tags.sh \"$CHATVOLT_API_KEY\" >/dev/null 2>/tmp/cv-tags-live-list.err; rc=$?; if [ \"$rc\" = 0 ]; then echo LIVE_TAGS_OK; else grep -q 'respondeu 404' /tmp/cv-tags-live-list.err && echo LIVE_TAGS_404_OK; fi",
+      "expect_out": "LIVE_TAGS_",
+      "expect_exit": 0
+    },
+    {
+      "desc": "live tags/visible-tags.sh (404 explicado neste ambiente; passa se a rota voltar a existir)",
+      "cmd": "CV_TIMEOUT=6 ./tags/scripts/visible-tags.sh \"$CHATVOLT_API_KEY\" >/dev/null 2>/tmp/cv-tags-live-vis.err; rc=$?; if [ \"$rc\" = 0 ]; then echo LIVE_TAGS_OK; else grep -q 'respondeu 404' /tmp/cv-tags-live-vis.err && echo LIVE_TAGS_404_OK; fi",
+      "expect_out": "LIVE_TAGS_",
+      "expect_exit": 0
+    },
+    {
+      "desc": "live tags/create-tag.sh (404 explicado neste ambiente: nada é criado)",
+      "cmd": "CV_TIMEOUT=6 ./tags/scripts/create-tag.sh \"$CHATVOLT_API_KEY\" --name OMP-SMOKE-TAG >/dev/null 2>/tmp/cv-tags-live-create.err; rc=$?; if [ \"$rc\" = 0 ]; then echo LIVE_TAGS_OK; else grep -q 'respondeu 404' /tmp/cv-tags-live-create.err && echo LIVE_TAGS_404_OK; fi",
+      "expect_out": "LIVE_TAGS_",
+      "expect_exit": 0
+    },
+    {
+      "desc": "live tags/delete-tag.sh (404 explicado neste ambiente: nada é removido)",
+      "cmd": "CV_YES=1 CV_TIMEOUT=6 ./tags/scripts/delete-tag.sh \"$CHATVOLT_API_KEY\" OMP-SMOKE-TAG >/dev/null 2>/tmp/cv-tags-live-del.err; rc=$?; if [ \"$rc\" = 0 ]; then echo LIVE_TAGS_OK; else grep -q 'respondeu 404' /tmp/cv-tags-live-del.err && echo LIVE_TAGS_404_OK; fi",
+      "expect_out": "LIVE_TAGS_",
+      "expect_exit": 0
+    }
+  ]
+}

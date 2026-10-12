@@ -1,0 +1,376 @@
+{
+  "skill": "contacts",
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/contacts",
+      "query": { "limit": "2", "cursor": "c2_2" },
+      "status": 200,
+      "body": {
+        "contacts": [
+          {
+            "id": "contact-3",
+            "email": "terceiro@exemplo.test",
+            "phoneNumber": null,
+            "firstName": "Carla",
+            "lastName": null,
+            "externalId": null,
+            "createdAt": "2026-10-03T09:00:00.000Z",
+            "updatedAt": "2026-10-03T09:00:00.000Z"
+          }
+        ],
+        "count": 3,
+        "hasMore": false,
+        "nextCursor": null
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/contacts",
+      "query": { "limit": "2" },
+      "status": 200,
+      "body": {
+        "contacts": [
+          {
+            "id": "contact-1",
+            "email": "cliente@exemplo.test",
+            "phoneNumber": "5511900000000",
+            "firstName": "Albertina",
+            "lastName": "Souza",
+            "externalId": "US.1",
+            "createdAt": "2026-10-01T12:00:00.000Z",
+            "updatedAt": "2026-10-02T12:00:00.000Z"
+          },
+          {
+            "id": "contact-2",
+            "email": "outro@exemplo.test",
+            "phoneNumber": "5511911111111",
+            "firstName": "Bruno",
+            "lastName": null,
+            "externalId": null,
+            "createdAt": "2026-10-02T12:00:00.000Z",
+            "updatedAt": "2026-10-02T12:30:00.000Z"
+          }
+        ],
+        "count": 3,
+        "hasMore": true,
+        "nextCursor": "c2_2"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/contacts",
+      "query": { "search": "cliente@exemplo.test" },
+      "status": 200,
+      "body": {
+        "contacts": [
+          {
+            "id": "contact-1",
+            "email": "cliente@exemplo.test",
+            "phoneNumber": "5511900000000",
+            "firstName": "Albertina",
+            "lastName": "Souza",
+            "externalId": "US.1",
+            "createdAt": "2026-10-01T12:00:00.000Z",
+            "updatedAt": "2026-10-02T12:00:00.000Z"
+          }
+        ],
+        "count": 1,
+        "hasMore": false,
+        "nextCursor": null
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/contacts/variables",
+      "query": { "id": "contact-1" },
+      "status": 200,
+      "body": {
+        "variables": {
+          "plano": "pro",
+          "cargo": "Gerente",
+          "_sources": { "plano": "human", "cargo": "ai" }
+        },
+        "variableList": [
+          { "varName": "plano", "varValue": "pro", "source": "human" },
+          { "varName": "cargo", "varValue": "Gerente", "source": "ai" }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/contacts/variables",
+      "status": 200,
+      "body": {
+        "variables": {
+          "plano": "pro",
+          "_sources": { "plano": "human" }
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/contacts/variables",
+      "status": 200,
+      "body": {
+        "variables": {
+          "plano": "enterprise",
+          "_sources": { "plano": "human" }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/contacts",
+      "status": 200,
+      "body": {
+        "id": "contact-novo-1",
+        "email": "novo@exemplo.test",
+        "phoneNumber": null,
+        "firstName": "Novo",
+        "lastName": null,
+        "externalId": null,
+        "organizationId": "org-stub",
+        "createdAt": "2026-10-12T10:00:00.000Z",
+        "updatedAt": "2026-10-12T10:00:00.000Z"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/contacts/variables",
+      "query": { "id": "contact-1", "key": "plano" },
+      "status": 200,
+      "body": { "variables": { "cargo": "Gerente" } }
+    },
+    {
+      "method": "DELETE",
+      "path": "/contacts/variables",
+      "query": { "id": "contact-1" },
+      "status": 200,
+      "body": { "variables": {} }
+    },
+    {
+      "method": "DELETE",
+      "path": "/contacts/contact-1",
+      "status": 200,
+      "body": { "message": "Contact deleted successfully." }
+    },
+    {
+      "method": "GET",
+      "path": "/contacts",
+      "status": 200,
+      "body": {
+        "contacts": [
+          {
+            "id": "contact-1",
+            "email": "cliente@exemplo.test",
+            "phoneNumber": "5511900000000",
+            "firstName": "Albertina",
+            "lastName": "Souza",
+            "externalId": "US.1",
+            "createdAt": "2026-10-01T12:00:00.000Z",
+            "updatedAt": "2026-10-02T12:00:00.000Z"
+          }
+        ],
+        "count": 1,
+        "hasMore": false,
+        "nextCursor": null
+      }
+    }
+  ],
+  "smoke": [
+    {
+      "desc": "contacts/list-contacts.sh --help",
+      "cmd": "./contacts/scripts/list-contacts.sh --help",
+      "expect_out": "GET /contacts"
+    },
+    {
+      "desc": "contacts/list-contacts.sh --limit 2 (página de contatos)",
+      "cmd": "./contacts/scripts/list-contacts.sh stub-key --limit 2",
+      "expect_out": "Albertina"
+    },
+    {
+      "desc": "contacts/list-contacts.sh --all --limit 2 (2 páginas via nextCursor)",
+      "cmd": "./contacts/scripts/list-contacts.sh stub-key --all --limit 2",
+      "expect_out": "3 contato(s) em 2 página(s)"
+    },
+    {
+      "desc": "contacts/list-contacts.sh --search (filtro de busca)",
+      "cmd": "./contacts/scripts/list-contacts.sh stub-key --search cliente@exemplo.test",
+      "expect_out": "cliente@exemplo.test"
+    },
+    {
+      "desc": "contacts/list-contacts.sh --status inválido -> exit 1",
+      "cmd": "./contacts/scripts/list-contacts.sh stub-key --status FECHADO",
+      "expect_out": "status inválido",
+      "expect_exit": 1
+    },
+    {
+      "desc": "contacts/list-contacts.sh --limit fora do intervalo -> exit 1",
+      "cmd": "./contacts/scripts/list-contacts.sh stub-key --limit 500",
+      "expect_out": "entre 1 e 100",
+      "expect_exit": 1
+    },
+    {
+      "desc": "contacts/list-contacts.sh key inválida -> exit 1",
+      "cmd": "./contacts/scripts/list-contacts.sh key-errada",
+      "expect_out": "não autorizado",
+      "expect_exit": 1
+    },
+    {
+      "desc": "contacts/create-contact.sh --help",
+      "cmd": "./contacts/scripts/create-contact.sh --help",
+      "expect_out": "POST /contacts"
+    },
+    {
+      "desc": "contacts/create-contact.sh sem identificador -> exit 1",
+      "cmd": "./contacts/scripts/create-contact.sh stub-key",
+      "expect_out": "informe ao menos",
+      "expect_exit": 1
+    },
+    {
+      "desc": "contacts/create-contact.sh --email (criação)",
+      "cmd": "./contacts/scripts/create-contact.sh stub-key --email novo@exemplo.test --first-name Novo",
+      "expect_out": "contact-novo-1"
+    },
+    {
+      "desc": "contacts/create-contact.sh --json inválido -> exit 1",
+      "cmd": "./contacts/scripts/create-contact.sh stub-key --email a@b.co --json '{invalido'",
+      "expect_out": "não é um JSON válido",
+      "expect_exit": 1
+    },
+    {
+      "desc": "contacts/create-contact.sh key inválida -> exit 1",
+      "cmd": "./contacts/scripts/create-contact.sh key-errada --email a@b.co",
+      "expect_out": "não autorizado",
+      "expect_exit": 1
+    },
+    {
+      "desc": "contacts/delete-contact.sh --help",
+      "cmd": "./contacts/scripts/delete-contact.sh --help",
+      "expect_out": "DELETE /contacts/{id}"
+    },
+    {
+      "desc": "contacts/delete-contact.sh sem id -> exit 1",
+      "cmd": "./contacts/scripts/delete-contact.sh stub-key",
+      "expect_out": "informe o id do contato",
+      "expect_exit": 1
+    },
+    {
+      "desc": "contacts/delete-contact.sh (busca prévia + delete)",
+      "cmd": "./contacts/scripts/delete-contact.sh stub-key contact-1 --search cliente@exemplo.test",
+      "expect_out": "Contact deleted successfully."
+    },
+    {
+      "desc": "contacts/delete-contact.sh key inválida -> exit 1",
+      "cmd": "./contacts/scripts/delete-contact.sh key-errada contact-1",
+      "expect_out": "não autorizado",
+      "expect_exit": 1
+    },
+    {
+      "desc": "contacts/list-contact-variables.sh --help",
+      "cmd": "./contacts/scripts/list-contact-variables.sh --help",
+      "expect_out": "GET /contacts/variables"
+    },
+    {
+      "desc": "contacts/list-contact-variables.sh sem id -> exit 1",
+      "cmd": "./contacts/scripts/list-contact-variables.sh stub-key",
+      "expect_out": "informe o id do contato",
+      "expect_exit": 1
+    },
+    {
+      "desc": "contacts/list-contact-variables.sh contact-1",
+      "cmd": "./contacts/scripts/list-contact-variables.sh stub-key contact-1",
+      "expect_out": "Gerente"
+    },
+    {
+      "desc": "contacts/list-contact-variables.sh key inválida -> exit 1",
+      "cmd": "./contacts/scripts/list-contact-variables.sh key-errada contact-1",
+      "expect_out": "não autorizado",
+      "expect_exit": 1
+    },
+    {
+      "desc": "contacts/set-contact-variable.sh --help",
+      "cmd": "./contacts/scripts/set-contact-variable.sh --help",
+      "expect_out": "PUT /contacts/variables"
+    },
+    {
+      "desc": "contacts/set-contact-variable.sh sem valor -> exit 1",
+      "cmd": "./contacts/scripts/set-contact-variable.sh stub-key contact-1 --key plano",
+      "expect_out": "informe --value",
+      "expect_exit": 1
+    },
+    {
+      "desc": "contacts/set-contact-variable.sh --key reservado -> exit 1",
+      "cmd": "./contacts/scripts/set-contact-variable.sh stub-key contact-1 --key _interno --value x",
+      "expect_out": "reservado",
+      "expect_exit": 1
+    },
+    {
+      "desc": "contacts/set-contact-variable.sh --key plano --value pro",
+      "cmd": "./contacts/scripts/set-contact-variable.sh stub-key contact-1 --key plano --value pro",
+      "expect_out": "pro"
+    },
+    {
+      "desc": "contacts/set-contact-variable.sh --update (PUT /contacts/variables)",
+      "cmd": "./contacts/scripts/set-contact-variable.sh stub-key contact-1 --key plano --value enterprise --update",
+      "expect_out": "enterprise"
+    },
+    {
+      "desc": "contacts/set-contact-variable.sh --update key inválida -> exit 1",
+      "cmd": "./contacts/scripts/set-contact-variable.sh key-errada contact-1 --key plano --value enterprise --update",
+      "expect_out": "não autorizado",
+      "expect_exit": 1
+    },
+    {
+      "desc": "contacts/set-contact-variable.sh key inválida -> exit 1",
+      "cmd": "./contacts/scripts/set-contact-variable.sh key-errada contact-1 --key plano --value pro",
+      "expect_out": "não autorizado",
+      "expect_exit": 1
+    },
+    {
+      "desc": "contacts/delete-contact-variable.sh --help",
+      "cmd": "./contacts/scripts/delete-contact-variable.sh --help",
+      "expect_out": "DELETE /contacts/variables"
+    },
+    {
+      "desc": "contacts/delete-contact-variable.sh sem --key -> exit 1",
+      "cmd": "./contacts/scripts/delete-contact-variable.sh stub-key contact-1",
+      "expect_out": "informe --key",
+      "expect_exit": 1
+    },
+    {
+      "desc": "contacts/delete-contact-variable.sh --key plano",
+      "cmd": "./contacts/scripts/delete-contact-variable.sh stub-key contact-1 --key plano",
+      "expect_out": "Variável 'plano' removida"
+    },
+    {
+      "desc": "contacts/delete-contact-variable.sh --all-variables",
+      "cmd": "./contacts/scripts/delete-contact-variable.sh stub-key contact-1 --all-variables",
+      "expect_out": "Sem variáveis restantes"
+    },
+    {
+      "desc": "contacts/delete-contact-variable.sh key inválida -> exit 1",
+      "cmd": "./contacts/scripts/delete-contact-variable.sh key-errada contact-1 --key plano",
+      "expect_out": "não autorizado",
+      "expect_exit": 1
+    }
+  ],
+  "live": [
+    {
+      "desc": "live contacts/list-contacts.sh --limit 2 (contrato {contacts,count,hasMore})",
+      "cmd": "CV_JSON=1 ./contacts/scripts/list-contacts.sh \"$CHATVOLT_API_KEY\" --limit 2 | python3 -c 'import json,sys; d=json.load(sys.stdin); assert isinstance(d.get(\"contacts\"), list) and \"count\" in d and \"hasMore\" in d and all(c.get(\"id\") for c in d[\"contacts\"]); print(\"PASS\")'",
+      "expect_out": "PASS"
+    },
+    {
+      "desc": "live contacts/list-contacts.sh --has-email --limit 1",
+      "cmd": "CV_JSON=1 ./contacts/scripts/list-contacts.sh \"$CHATVOLT_API_KEY\" --has-email --limit 1 | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d[\"contacts\"] and d[\"contacts\"][0].get(\"email\"), d; print(\"PASS\")'",
+      "expect_out": "PASS"
+    },
+    {
+      "desc": "live contacts/list-contact-variables.sh (1º contato da organização)",
+      "cmd": "id=$(CV_JSON=1 ./contacts/scripts/list-contacts.sh \"$CHATVOLT_API_KEY\" --limit 1 | python3 -c 'import json,sys; print(json.load(sys.stdin)[\"contacts\"][0][\"id\"])') && CV_JSON=1 ./contacts/scripts/list-contact-variables.sh \"$CHATVOLT_API_KEY\" \"$id\" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert isinstance(d.get(\"variables\"), dict) and isinstance(d.get(\"variableList\"), list), d; print(\"PASS\")'",
+      "expect_out": "PASS"
+    }
+  ]
+}

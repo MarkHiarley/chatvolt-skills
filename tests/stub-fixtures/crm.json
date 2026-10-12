@@ -1,0 +1,892 @@
+{
+  "skill": "crm",
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/crm/scenario",
+      "query": {
+        "agentId": "agent-quota"
+      },
+      "status": 402,
+      "body": {
+        "error": "USAGE_LIMIT"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/crm/scenario",
+      "status": 200,
+      "body": [
+        {
+          "id": "scen-1",
+          "name": "Cenário Stub A",
+          "description": "cenário de teste offline",
+          "organizationId": "org-stub",
+          "createdAt": "2026-06-02T17:23:50.128Z",
+          "updatedAt": "2026-06-02T17:23:54.148Z"
+        },
+        {
+          "id": "scen-2",
+          "name": "Cenário Stub B",
+          "description": null,
+          "organizationId": "org-stub",
+          "createdAt": "2026-05-12T03:00:01.189Z",
+          "updatedAt": "2026-06-02T17:23:54.148Z"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/crm/scenario",
+      "status": 201,
+      "body": {
+        "id": "scen-novo-1",
+        "name": "Cenário Novo",
+        "description": "criado no stub",
+        "organizationId": "org-stub",
+        "createdAt": "2026-10-12T19:00:00.000Z",
+        "updatedAt": "2026-10-12T19:00:00.000Z"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/crm/scenario",
+      "status": 200,
+      "body": {
+        "id": "scen-1",
+        "name": "Cenário Renomeado",
+        "description": "cenário de teste offline",
+        "organizationId": "org-stub",
+        "createdAt": "2026-06-02T17:23:50.128Z",
+        "updatedAt": "2026-10-12T19:00:00.000Z"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/crm/scenario",
+      "status": 200,
+      "body": {
+        "id": "scen-1",
+        "name": "Cenário Stub A",
+        "description": "cenário de teste offline",
+        "organizationId": "org-stub",
+        "createdAt": "2026-06-02T17:23:50.128Z",
+        "updatedAt": "2026-06-02T17:23:54.148Z"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/crm/step",
+      "query": {
+        "scenarioId": "scen-erro"
+      },
+      "status": 500,
+      "body": {
+        "error": "internal server error"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/crm/step",
+      "query": {
+        "scenarioId": "scen-1"
+      },
+      "status": 200,
+      "body": [
+        {
+          "id": "step-1",
+          "name": "Etapa Inicial",
+          "index": 0,
+          "prompt": "",
+          "trigger": "",
+          "initialMessage": "",
+          "autoNextStepId": null,
+          "autoNextTime": null,
+          "autoNextTimeUnit": "m",
+          "defaultStatus": null,
+          "defaultPriority": null,
+          "assigneeLogicType": "none",
+          "isRequired": true
+        },
+        {
+          "id": "step-2",
+          "name": "Qualificação",
+          "index": 1,
+          "prompt": "Pergunte o segmento",
+          "trigger": "",
+          "initialMessage": "",
+          "autoNextStepId": null,
+          "autoNextTime": null,
+          "autoNextTimeUnit": "m",
+          "defaultStatus": null,
+          "defaultPriority": null,
+          "assigneeLogicType": "none",
+          "isRequired": false
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/crm/step",
+      "status": 201,
+      "body": {
+        "id": "step-novo-1",
+        "name": "Etapa Nova",
+        "index": 2,
+        "prompt": "Pergunte o segmento",
+        "trigger": "",
+        "initialMessage": "",
+        "autoNextStepId": null,
+        "autoNextTime": null,
+        "autoNextTimeUnit": "m",
+        "defaultStatus": null,
+        "defaultPriority": null,
+        "assigneeLogicType": "none",
+        "isRequired": true
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/crm/step",
+      "status": 200,
+      "body": {
+        "id": "step-2",
+        "name": "Qualificação v2",
+        "index": 1,
+        "prompt": "Pergunte o segmento",
+        "trigger": "",
+        "initialMessage": "",
+        "autoNextStepId": null,
+        "autoNextTime": null,
+        "autoNextTimeUnit": "m",
+        "defaultStatus": "RESOLVED",
+        "defaultPriority": null,
+        "assigneeLogicType": "none",
+        "isRequired": false
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/crm/step",
+      "status": 200,
+      "body": {
+        "id": "step-2",
+        "name": "Qualificação",
+        "index": 1,
+        "prompt": "Pergunte o segmento",
+        "trigger": "",
+        "initialMessage": "",
+        "autoNextStepId": null,
+        "autoNextTime": null,
+        "autoNextTimeUnit": "m",
+        "defaultStatus": null,
+        "defaultPriority": null,
+        "assigneeLogicType": "none",
+        "isRequired": false
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/crm/scenario/scen-1/conversation",
+      "query": {
+        "isCount": "true",
+        "stepId": "step-1"
+      },
+      "status": 200,
+      "body": {
+        "count": 21
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/crm/scenario/scen-1/conversation",
+      "query": {
+        "isCount": "true"
+      },
+      "status": 200,
+      "body": {
+        "step-1": 21,
+        "step-2": 1
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/crm/scenario/scen-1/conversation",
+      "status": 200,
+      "body": [
+        {
+          "id": "link-1",
+          "scenarioId": "scen-1",
+          "conversationId": "conv-api-1",
+          "stepId": "step-1",
+          "organizationId": "org-stub",
+          "available": true,
+          "order": 0,
+          "createdAt": "2026-09-14T20:26:28.215Z",
+          "updatedAt": "2026-09-14T20:26:28.215Z",
+          "step": {
+            "id": "step-1",
+            "name": "Etapa Inicial",
+            "index": 0
+          },
+          "conversation": {
+            "id": "conv-api-1",
+            "channel": "api",
+            "status": "UNRESOLVED",
+            "priority": "MEDIUM"
+          }
+        }
+      ]
+    },
+    {
+      "method": "DELETE",
+      "path": "/crm/scenario/scen-1/conversation",
+      "query": {
+        "conversationId": "conv-api-1"
+      },
+      "status": 200,
+      "body": {
+        "message": "Conversation successfully removed from scenario"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/crm/step/conversation",
+      "status": 200,
+      "body": {
+        "id": "link-novo-1",
+        "scenarioId": "scen-1",
+        "conversationId": "conv-api-1",
+        "stepId": "step-2",
+        "organizationId": "org-stub",
+        "available": true,
+        "order": 0,
+        "createdAt": "2026-09-14T20:26:28.215Z",
+        "updatedAt": "2026-09-14T20:26:28.215Z",
+        "step": {
+          "id": "step-2",
+          "name": "Qualificação",
+          "index": 1
+        },
+        "conversation": {
+          "id": "conv-api-1",
+          "channel": "api",
+          "status": "UNRESOLVED",
+          "priority": "MEDIUM"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/crm/step/move",
+      "status": 200,
+      "body": {
+        "id": "link-novo-1",
+        "scenarioId": "scen-1",
+        "conversationId": "conv-api-1",
+        "stepId": "step-2",
+        "organizationId": "org-stub",
+        "available": true,
+        "order": 0,
+        "createdAt": "2026-09-14T20:26:28.215Z",
+        "updatedAt": "2026-09-14T20:26:28.215Z",
+        "step": {
+          "id": "step-2",
+          "name": "Qualificação",
+          "index": 1
+        },
+        "conversation": {
+          "id": "conv-api-1",
+          "channel": "api",
+          "status": "UNRESOLVED",
+          "priority": "MEDIUM"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/crm/conversationLog",
+      "query": {
+        "limit": "2"
+      },
+      "status": 200,
+      "body": {
+        "data": [
+          {
+            "id": "log-1",
+            "conversationId": "conv-api-1",
+            "scenarioId": "scen-1",
+            "stepId": "step-1",
+            "organizationId": "org-stub",
+            "status": "active",
+            "createdAt": "2026-09-14T20:26:28.215Z",
+            "updatedAt": "2026-09-14T20:26:28.215Z",
+            "whoMoved": "Human",
+            "conversation": {
+              "id": "conv-api-1",
+              "title": null
+            },
+            "scenario": {
+              "id": "scen-1",
+              "name": "Cenário Stub A"
+            },
+            "step": {
+              "id": "step-1",
+              "name": "Etapa Inicial",
+              "index": 0
+            }
+          },
+          {
+            "id": "log-2",
+            "conversationId": "conv-api-1",
+            "scenarioId": "scen-1",
+            "stepId": "step-2",
+            "organizationId": "org-stub",
+            "status": "inactive",
+            "createdAt": "2026-09-14T20:26:28.215Z",
+            "updatedAt": "2026-09-14T20:26:28.215Z",
+            "whoMoved": "Human",
+            "conversation": {
+              "id": "conv-api-1",
+              "title": null
+            },
+            "scenario": {
+              "id": "scen-1",
+              "name": "Cenário Stub A"
+            },
+            "step": {
+              "id": "step-2",
+              "name": "Qualificação",
+              "index": 1
+            }
+          }
+        ],
+        "pagination": {
+          "page": 1,
+          "limit": 2,
+          "total": 190,
+          "totalPages": 95
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/crm/conversationLog/log-1",
+      "status": 200,
+      "body": {
+        "id": "log-1",
+        "conversationId": "conv-api-1",
+        "scenarioId": "scen-1",
+        "stepId": "step-1",
+        "organizationId": "org-stub",
+        "status": "active",
+        "createdAt": "2026-09-14T20:26:28.215Z",
+        "updatedAt": "2026-09-14T20:26:28.215Z",
+        "whoMoved": "Human",
+        "conversation": {
+          "id": "conv-api-1",
+          "title": null
+        },
+        "scenario": {
+          "id": "scen-1",
+          "name": "Cenário Stub A"
+        },
+        "step": {
+          "id": "step-1",
+          "name": "Etapa Inicial",
+          "index": 0
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/crm/conversationLog",
+      "status": 200,
+      "body": {
+        "id": "log-novo-1",
+        "conversationId": "conv-api-1",
+        "scenarioId": "scen-1",
+        "stepId": "step-1",
+        "organizationId": "org-stub",
+        "status": "active",
+        "createdAt": "2026-09-14T20:26:28.215Z",
+        "updatedAt": "2026-09-14T20:26:28.215Z",
+        "whoMoved": "Human",
+        "conversation": {
+          "id": "conv-api-1",
+          "title": null
+        },
+        "scenario": {
+          "id": "scen-1",
+          "name": "Cenário Stub A"
+        },
+        "step": {
+          "id": "step-1",
+          "name": "Etapa Inicial",
+          "index": 0
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/crm/conversationLog/log-1",
+      "status": 200,
+      "body": {
+        "id": "log-1",
+        "conversationId": "conv-api-1",
+        "scenarioId": "scen-1",
+        "stepId": "step-1",
+        "organizationId": "org-stub",
+        "status": "inactive",
+        "createdAt": "2026-09-14T20:26:28.215Z",
+        "updatedAt": "2026-09-14T20:26:28.215Z",
+        "whoMoved": "Human",
+        "conversation": {
+          "id": "conv-api-1",
+          "title": null
+        },
+        "scenario": {
+          "id": "scen-1",
+          "name": "Cenário Stub A"
+        },
+        "step": {
+          "id": "step-1",
+          "name": "Etapa Inicial",
+          "index": 0
+        }
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/crm/conversationLog/log-1",
+      "status": 200,
+      "body": {
+        "id": "log-1",
+        "conversationId": "conv-api-1",
+        "scenarioId": "scen-1",
+        "stepId": "step-1",
+        "organizationId": "org-stub",
+        "status": "active",
+        "createdAt": "2026-09-14T20:26:28.215Z",
+        "updatedAt": "2026-09-14T20:26:28.215Z",
+        "whoMoved": "Human",
+        "conversation": {
+          "id": "conv-api-1",
+          "title": null
+        },
+        "scenario": {
+          "id": "scen-1",
+          "name": "Cenário Stub A"
+        },
+        "step": {
+          "id": "step-1",
+          "name": "Etapa Inicial",
+          "index": 0
+        }
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/crm/conversationLog/log-1",
+      "status": 200,
+      "body": {
+        "message": "Log deleted successfully"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/crm/conversation/count",
+      "query": {
+        "scenarioId": "scen-quota"
+      },
+      "status": 402,
+      "body": {
+        "error": "USAGE_LIMIT"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/crm/conversation/count",
+      "query": {
+        "scenarioId": "scen-1"
+      },
+      "status": 200,
+      "body": {
+        "total": 23
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/crm/events",
+      "query": {
+        "scenarioId": "scen-1"
+      },
+      "status": 200,
+      "raw": "data: {\"type\":\"CONNECTED\",\"channel\":\"crm:org-stub:scen-1\"}\n\ndata: {\"type\":\"CONVERSATION_ADDED\",\"conversationId\":\"conv-api-1\",\"scenarioId\":\"scen-1\",\"stepId\":\"step-1\"}\n\n"
+    }
+  ],
+  "smoke": [
+    {
+      "desc": "crm/scenarios.sh list (formata a listagem)",
+      "cmd": "./crm/scripts/scenarios.sh stub-key list | grep -q 'cenário(s) CRM' && echo LISTA-OK",
+      "expect_out": "LISTA-OK",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/scenarios.sh list --agent",
+      "cmd": "./crm/scripts/scenarios.sh stub-key list --agent agent-1 | grep -q 'cenário(s) CRM' && echo AGENTE-OK",
+      "expect_out": "AGENTE-OK",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/scenarios.sh show",
+      "cmd": "ID=$(CV_JSON=1 ./crm/scripts/scenarios.sh stub-key list | python3 -c 'import json,sys; d=json.load(sys.stdin); items=d if isinstance(d,list) else (d.get(\"data\") or ([d] if isinstance(d,dict) and d.get(\"id\") else [])); print(items[0].get(\"id\") if items else \"\")'); [ -n \"$ID\" ] && ./crm/scripts/scenarios.sh stub-key show \"$ID\" | grep -qE '^Cenário ' && echo SHOW-OK",
+      "expect_out": "SHOW-OK",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/scenarios.sh show inexistente -> exit 1",
+      "cmd": "./crm/scripts/scenarios.sh stub-key show nao-existe",
+      "expect_out": "não encontrado",
+      "expect_exit": 1
+    },
+    {
+      "desc": "crm/scenarios.sh list --agent agent-quota -> exit 3 (402)",
+      "cmd": "./crm/scripts/scenarios.sh stub-key list --agent agent-quota",
+      "expect_out": "quota",
+      "expect_exit": 3
+    },
+    {
+      "desc": "crm/scenarios.sh create",
+      "cmd": "./crm/scripts/scenarios.sh stub-key create --name \"Cenário Novo\" --description \"criado no stub\"",
+      "expect_out": "scen-novo-1",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/scenarios.sh update (PUT)",
+      "cmd": "./crm/scripts/scenarios.sh stub-key update scen-1 --name \"Cenário Renomeado\"",
+      "expect_out": "Cenário Renomeado",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/scenarios.sh delete (corpo no DELETE)",
+      "cmd": "./crm/scripts/scenarios.sh stub-key delete scen-1",
+      "expect_out": "apagado",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/scenarios.sh sem subcomando -> exit 1",
+      "cmd": "./crm/scripts/scenarios.sh stub-key",
+      "expect_out": "ERRO",
+      "expect_exit": 1
+    },
+    {
+      "desc": "crm/scenarios.sh --json inválido -> exit 1",
+      "cmd": "./crm/scripts/scenarios.sh stub-key create --name X --json 'nao-e-json'",
+      "expect_out": "inválido",
+      "expect_exit": 1
+    },
+    {
+      "desc": "crm/scenarios.sh --help",
+      "cmd": "./crm/scripts/scenarios.sh --help",
+      "expect_out": "Uso: scenarios.sh",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/steps.sh list",
+      "cmd": "./crm/scripts/steps.sh stub-key list scen-1",
+      "expect_out": "Etapa Inicial",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/steps.sh list --agent",
+      "cmd": "./crm/scripts/steps.sh stub-key list scen-1 --agent agent-1",
+      "expect_out": "Qualificação",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/steps.sh show",
+      "cmd": "./crm/scripts/steps.sh stub-key show step-2 --scenario scen-1",
+      "expect_out": "Pergunte o segmento",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/steps.sh create",
+      "cmd": "./crm/scripts/steps.sh stub-key create scen-1 --name \"Etapa Nova\" --prompt \"Pergunte o segmento\" --required",
+      "expect_out": "step-novo-1",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/steps.sh update (PUT)",
+      "cmd": "./crm/scripts/steps.sh stub-key update step-2 --name \"Qualificação v2\" --default-status RESOLVED",
+      "expect_out": "step-2",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/steps.sh update sem --name reaproveita o nome atual",
+      "cmd": "./crm/scripts/steps.sh stub-key update step-2 --scenario scen-1 --prompt \"novo prompt\"",
+      "expect_out": "reaproveitando o nome atual",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/steps.sh delete (corpo no DELETE)",
+      "cmd": "./crm/scripts/steps.sh stub-key delete step-2 --scenario scen-1",
+      "expect_out": "apagada",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/steps.sh create sem trigger/prompt -> exit 1",
+      "cmd": "./crm/scripts/steps.sh stub-key create scen-1 --name X",
+      "expect_out": "exige ao menos um",
+      "expect_exit": 1
+    },
+    {
+      "desc": "crm/steps.sh enum inválido -> exit 1",
+      "cmd": "./crm/scripts/steps.sh stub-key create scen-1 --name X --prompt p --default-status FOO",
+      "expect_out": "inválido",
+      "expect_exit": 1
+    },
+    {
+      "desc": "crm/steps.sh erro 500 -> exit 5",
+      "cmd": "./crm/scripts/steps.sh stub-key list scen-erro",
+      "expect_out": "erro interno",
+      "expect_exit": 5
+    },
+    {
+      "desc": "crm/steps.sh --help",
+      "cmd": "./crm/scripts/steps.sh --help",
+      "expect_out": "Uso: steps.sh",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/step-conversations.sh list",
+      "cmd": "./crm/scripts/step-conversations.sh stub-key list scen-1 --limit 2",
+      "expect_out": "conv-api-1",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/step-conversations.sh list --inactive --page 1",
+      "cmd": "./crm/scripts/step-conversations.sh stub-key list scen-1 --inactive --page 1",
+      "expect_out": "link-1",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/step-conversations.sh count --step (isCount+stepId)",
+      "cmd": "./crm/scripts/step-conversations.sh stub-key count scen-1 --step step-1",
+      "expect_out": "21 conversa(s)",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/step-conversations.sh count do cenário (mapa por etapa)",
+      "cmd": "./crm/scripts/step-conversations.sh stub-key count scen-1",
+      "expect_out": "22 conversa(s)",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/step-conversations.sh add",
+      "cmd": "./crm/scripts/step-conversations.sh stub-key add scen-1 conv-api-1 --step step-1",
+      "expect_out": "link-novo-1",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/step-conversations.sh add --step-index",
+      "cmd": "./crm/scripts/step-conversations.sh stub-key add scen-1 conv-api-1 --step-index 1",
+      "expect_out": "link-novo-1",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/step-conversations.sh move",
+      "cmd": "./crm/scripts/step-conversations.sh stub-key move conv-api-1 --dest-step step-2 --scenario scen-1",
+      "expect_out": "link-novo-1",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/step-conversations.sh remove",
+      "cmd": "./crm/scripts/step-conversations.sh stub-key remove scen-1 conv-api-1",
+      "expect_out": "removed from scenario",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/step-conversations.sh add sem etapa -> exit 1",
+      "cmd": "./crm/scripts/step-conversations.sh stub-key add scen-1 conv-api-1",
+      "expect_out": "exige --step",
+      "expect_exit": 1
+    },
+    {
+      "desc": "crm/step-conversations.sh move sem cenário no índice -> exit 1",
+      "cmd": "./crm/scripts/step-conversations.sh stub-key move conv-api-1 --dest-step-index 1",
+      "expect_out": "exige --scenario",
+      "expect_exit": 1
+    },
+    {
+      "desc": "crm/step-conversations.sh cenário sem rota -> exit 1 (404)",
+      "cmd": "./crm/scripts/step-conversations.sh stub-key list scen-404",
+      "expect_out": "404",
+      "expect_exit": 1
+    },
+    {
+      "desc": "crm/step-conversations.sh --help",
+      "cmd": "./crm/scripts/step-conversations.sh --help",
+      "expect_out": "Uso: step-conversations.sh",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/conversation-logs.sh list",
+      "cmd": "./crm/scripts/conversation-logs.sh stub-key list --scenario scen-1 --limit 2",
+      "expect_out": "log-1",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/conversation-logs.sh list --status",
+      "cmd": "./crm/scripts/conversation-logs.sh stub-key list --status inactive --limit 2",
+      "expect_out": "log-2",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/conversation-logs.sh get",
+      "cmd": "./crm/scripts/conversation-logs.sh stub-key get log-1",
+      "expect_out": "status active",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/conversation-logs.sh create",
+      "cmd": "./crm/scripts/conversation-logs.sh stub-key create --conversation conv-api-1 --scenario scen-1 --step step-1",
+      "expect_out": "log-novo-1",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/conversation-logs.sh update (PUT)",
+      "cmd": "./crm/scripts/conversation-logs.sh stub-key update log-1 --status inactive",
+      "expect_out": "status inactive",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/conversation-logs.sh patch (PATCH)",
+      "cmd": "./crm/scripts/conversation-logs.sh stub-key patch log-1 --status active",
+      "expect_out": "status active",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/conversation-logs.sh delete",
+      "cmd": "./crm/scripts/conversation-logs.sh stub-key delete log-1",
+      "expect_out": "Log deleted successfully",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/conversation-logs.sh status inválido -> exit 1",
+      "cmd": "./crm/scripts/conversation-logs.sh stub-key update log-1 --status foo",
+      "expect_out": "inválido",
+      "expect_exit": 1
+    },
+    {
+      "desc": "crm/conversation-logs.sh create sem --step -> exit 1",
+      "cmd": "./crm/scripts/conversation-logs.sh stub-key create --conversation conv-api-1 --scenario scen-1",
+      "expect_out": "exige --step",
+      "expect_exit": 1
+    },
+    {
+      "desc": "crm/conversation-logs.sh log inexistente -> exit 1 (404)",
+      "cmd": "./crm/scripts/conversation-logs.sh stub-key get nao-existe",
+      "expect_out": "404",
+      "expect_exit": 1
+    },
+    {
+      "desc": "crm/conversation-logs.sh --help",
+      "cmd": "./crm/scripts/conversation-logs.sh --help",
+      "expect_out": "Uso: conversation-logs.sh",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/count.sh",
+      "cmd": "./crm/scripts/count.sh stub-key scen-1",
+      "expect_out": "23 conversa(s)",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/count.sh --step (ignorado pela rota)",
+      "cmd": "./crm/scripts/count.sh stub-key scen-1 --step step-1",
+      "expect_out": "23 conversa(s)",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/count.sh sem cenário -> exit 1",
+      "cmd": "./crm/scripts/count.sh stub-key",
+      "expect_out": "scenario-id",
+      "expect_exit": 1
+    },
+    {
+      "desc": "crm/count.sh quota 402 -> exit 3",
+      "cmd": "./crm/scripts/count.sh stub-key scen-quota",
+      "expect_out": "quota",
+      "expect_exit": 3
+    },
+    {
+      "desc": "crm/count.sh CV_JSON=1",
+      "cmd": "CV_JSON=1 ./crm/scripts/count.sh stub-key scen-1",
+      "expect_out": "{\"total\": 23}",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/count.sh --help",
+      "cmd": "./crm/scripts/count.sh --help",
+      "expect_out": "Uso: count.sh",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/events.sh (SSE, encerra limpo)",
+      "cmd": "./crm/scripts/events.sh stub-key --scenario scen-1 --max-time 3",
+      "expect_out": "CONNECTED",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/events.sh CV_JSON=1 (NDJSON)",
+      "cmd": "CV_JSON=1 ./crm/scripts/events.sh stub-key --scenario scen-1 --max-time 3",
+      "expect_out": "\"type\": \"CONNECTED\"",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/events.sh --raw",
+      "cmd": "./crm/scripts/events.sh stub-key --scenario scen-1 --max-time 3 --raw",
+      "expect_out": "data: {\"type\":\"CONNECTED\"",
+      "expect_exit": 0
+    },
+    {
+      "desc": "crm/events.sh cenário sem rota -> exit 1 (404)",
+      "cmd": "./crm/scripts/events.sh stub-key --scenario scen-404 --max-time 2",
+      "expect_out": "404",
+      "expect_exit": 1
+    },
+    {
+      "desc": "crm/events.sh sem --scenario -> exit 1",
+      "cmd": "./crm/scripts/events.sh stub-key --max-time 2",
+      "expect_out": "obrigatório",
+      "expect_exit": 1
+    },
+    {
+      "desc": "crm/events.sh --max-time inválido -> exit 1",
+      "cmd": "./crm/scripts/events.sh stub-key --max-time abc",
+      "expect_out": "inteiro",
+      "expect_exit": 1
+    },
+    {
+      "desc": "crm/events.sh --help",
+      "cmd": "./crm/scripts/events.sh --help",
+      "expect_out": "Uso: events.sh",
+      "expect_exit": 0
+    }
+  ],
+  "live": [
+    {
+      "desc": "live crm/scenarios.sh + steps + count + logs + vínculos (leitura)",
+      "cmd": "SC=$(CV_JSON=1 ./crm/scripts/scenarios.sh \"$CHATVOLT_API_KEY\" list | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d[0][\"id\"] if isinstance(d,list) and d else \"\")'); [ -n \"$SC\" ] || { echo 'sem cenarios CRM nesta organizacao'; exit 0; }; echo \"cenario: $SC\"; ./crm/scripts/steps.sh \"$CHATVOLT_API_KEY\" list \"$SC\"; ./crm/scripts/count.sh \"$CHATVOLT_API_KEY\" \"$SC\"; ./crm/scripts/conversation-logs.sh \"$CHATVOLT_API_KEY\" list --scenario \"$SC\" --limit 2; ./crm/scripts/step-conversations.sh \"$CHATVOLT_API_KEY\" list \"$SC\" --limit 2",
+      "expect_out": "",
+      "expect_exit": 0
+    },
+    {
+      "desc": "live crm/events.sh (SSE com --max-time 6)",
+      "cmd": "SC=$(CV_JSON=1 ./crm/scripts/scenarios.sh \"$CHATVOLT_API_KEY\" list | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d[0][\"id\"] if isinstance(d,list) and d else \"\")'); [ -n \"$SC\" ] || { echo 'sem cenarios CRM nesta organizacao'; exit 0; }; ./crm/scripts/events.sh \"$CHATVOLT_API_KEY\" --scenario \"$SC\" --max-time 6",
+      "expect_out": "",
+      "expect_exit": 0
+    }
+  ]
+}

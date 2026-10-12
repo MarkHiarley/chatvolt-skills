@@ -1,0 +1,104 @@
+{
+  "skill": "integrations",
+  "routes": [
+    { "method": "POST", "path": "/twilio/5511999998888/5511988887777/message",
+      "status": 200,
+      "body": {
+        "id": "msg-tw-1",
+        "text": "SMS de teste",
+        "html": null,
+        "from": "human",
+        "conversationId": "conv-api-tw1",
+        "externalId": "SM0aa11bb22cc33",
+        "contactId": "contact-1",
+        "read": false,
+        "createdAt": "2026-10-12T12:00:00.000Z",
+        "updatedAt": "2026-10-12T12:00:05.000Z"
+      } },
+    { "method": "POST", "path": "/twilio/000/000/message",
+      "status": 404, "body": { "error": "NOT_FOUND" } },
+
+    { "method": "POST", "path": "/zapi/inst_123/5511988887777/message",
+      "status": 200,
+      "body": {
+        "id": "msg-za-1",
+        "text": "Olá via Z-API",
+        "from": "human",
+        "conversationId": "conv-api-za1",
+        "externalId": "3EB0C767D097",
+        "read": false,
+        "createdAt": "2026-10-12T12:01:00.000Z",
+        "updatedAt": "2026-10-12T12:01:02.000Z"
+      } },
+    { "method": "POST", "path": "/zapi/inst_123/5511977776666/message",
+      "status": 200,
+      "body": {
+        "id": "msg-za-2",
+        "text": "[anexo] foto.jpg",
+        "from": "human",
+        "conversationId": "conv-api-za2",
+        "externalId": null,
+        "createdAt": "2026-10-12T12:02:00.000Z",
+        "updatedAt": "2026-10-12T12:02:01.000Z"
+      } },
+    { "method": "POST", "path": "/zapi/inst-quota/5511988887777/message",
+      "status": 402,
+      "body": { "data": null, "success": false, "error": { "message": "Premium functionality. The organization does not have an active subscription.", "code": "USAGE_LIMIT" } } },
+
+    { "method": "POST", "path": "/zapper/instances/inst_123/message",
+      "status": 200,
+      "body": {
+        "id": "msg-zp-1",
+        "text": "Olá via Zapper",
+        "from": "human",
+        "conversationId": "conv-api-zp1",
+        "externalId": "zapper-ext-9",
+        "read": false,
+        "createdAt": "2026-10-12T12:03:00.000Z",
+        "updatedAt": "2026-10-12T12:03:01.000Z"
+      } }
+  ],
+  "smoke": [
+    { "desc": "integrations/send-twilio.sh --help", "cmd": "./integrations/scripts/send-twilio.sh --help",
+      "expect_out": "POST /twilio/{ownerPhone}/{contactPhone}/message", "expect_exit": 0 },
+    { "desc": "integrations/send-zapi.sh --help", "cmd": "./integrations/scripts/send-zapi.sh --help",
+      "expect_out": "POST /zapi/{instanceId}/{contactPhone}/message", "expect_exit": 0 },
+    { "desc": "integrations/send-zapper.sh --help", "cmd": "./integrations/scripts/send-zapper.sh --help",
+      "expect_out": "POST /zapper/instances/{id}/message", "expect_exit": 0 },
+
+    { "desc": "integrations/send-twilio.sh (envio feliz, com --yes)", "cmd": "./integrations/scripts/send-twilio.sh stub-key --owner-phone 5511999998888 --contact-phone 5511988887777 --message \"SMS de teste\" --yes",
+      "expect_out": "msg-tw-1", "expect_exit": 0 },
+    { "desc": "integrations/send-twilio.sh (CV_JSON=1 stdout só JSON)", "cmd": "CV_JSON=1 ./integrations/scripts/send-twilio.sh stub-key --owner-phone 5511999998888 --contact-phone 5511988887777 --message oi --yes",
+      "expect_out": "\"id\": \"msg-tw-1\"", "expect_exit": 0 },
+    { "desc": "integrations/send-twilio.sh sem --yes (exit 1, nada enviado)", "cmd": "env -u CV_YES ./integrations/scripts/send-twilio.sh stub-key --owner-phone 5511999998888 --contact-phone 5511988887777 --message oi",
+      "expect_out": "exige --yes", "expect_exit": 1 },
+    { "desc": "integrations/send-twilio.sh sem --message (exit 1)", "cmd": "./integrations/scripts/send-twilio.sh stub-key --owner-phone 5511999998888 --contact-phone 5511988887777 --yes",
+      "expect_out": "informe --message", "expect_exit": 1 },
+    { "desc": "integrations/send-twilio.sh (404 da API -> exit 1)", "cmd": "./integrations/scripts/send-twilio.sh stub-key --owner-phone 000 --contact-phone 000 --message oi --yes",
+      "expect_out": "404", "expect_exit": 1 },
+
+    { "desc": "integrations/send-zapi.sh (envio feliz, com --yes)", "cmd": "./integrations/scripts/send-zapi.sh stub-key --instance inst_123 --contact-phone 5511988887777 --message \"Olá via Z-API\" --yes",
+      "expect_out": "msg-za-1", "expect_exit": 0 },
+    { "desc": "integrations/send-zapi.sh (anexos via --json)", "cmd": "./integrations/scripts/send-zapi.sh stub-key --instance inst_123 --contact-phone 5511977776666 --message \"segue a foto\" --json '{\"attachments\":[{\"url\":\"https://exemplo.com/foto.jpg\",\"name\":\"foto.jpg\",\"mimeType\":\"image/jpeg\"}]}' --yes",
+      "expect_out": "msg-za-2", "expect_exit": 0 },
+    { "desc": "integrations/send-zapi.sh (402 premium -> exit 3)", "cmd": "./integrations/scripts/send-zapi.sh stub-key --instance inst-quota --contact-phone 5511988887777 --message oi --yes",
+      "expect_out": "402", "expect_exit": 3 },
+    { "desc": "integrations/send-zapi.sh sem API key (exit 1)", "cmd": "env -u CV_YES ./integrations/scripts/send-zapi.sh --instance inst_123 --contact-phone 5511988887777 --message oi --yes",
+      "expect_out": "API key", "expect_exit": 1 },
+
+    { "desc": "integrations/send-zapper.sh (envio feliz, com --yes)", "cmd": "./integrations/scripts/send-zapper.sh stub-key --instance inst_123 --contact-phone 5511988887777 --message \"Olá via Zapper\" --yes",
+      "expect_out": "msg-zp-1", "expect_exit": 0 },
+    { "desc": "integrations/send-zapper.sh (--to como apelido + anexo)", "cmd": "./integrations/scripts/send-zapper.sh stub-key --instance inst_123 --to 5511988887777 --message \"Olá via Zapper\" --json '{\"attachments\":[{\"url\":\"https://exemplo.com/foto.jpg\"}]}' --yes",
+      "expect_out": "msg-zp-1", "expect_exit": 0 },
+    { "desc": "integrations/send-zapper.sh sem --contact-phone (exit 1)", "cmd": "./integrations/scripts/send-zapper.sh stub-key --instance inst_123 --message oi --yes",
+      "expect_out": "contact-phone", "expect_exit": 1 }
+  ],
+  "live": [
+    { "desc": "live integrations/send-twilio.sh --help (não envia nada)", "cmd": "./integrations/scripts/send-twilio.sh --help",
+      "expect_out": "send-twilio.sh", "expect_exit": 0 },
+    { "desc": "live integrations/send-zapi.sh --help (não envia nada)", "cmd": "./integrations/scripts/send-zapi.sh --help",
+      "expect_out": "send-zapi.sh", "expect_exit": 0 },
+    { "desc": "live integrations/send-zapper.sh --help (não envia nada)", "cmd": "./integrations/scripts/send-zapper.sh --help",
+      "expect_out": "send-zapper.sh", "expect_exit": 0 }
+  ]
+}

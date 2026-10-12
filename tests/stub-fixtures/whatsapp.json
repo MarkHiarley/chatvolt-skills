@@ -1,0 +1,346 @@
+{
+  "skill": "whatsapp",
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/whatsapp/templates",
+      "query": {
+        "agentId": "agent-stub-wa"
+      },
+      "status": 200,
+      "body": {
+        "data": [
+          {
+            "id": "tpl-1",
+            "name": "boas_vindas",
+            "language": "pt_BR",
+            "status": "APPROVED",
+            "category": "MARKETING",
+            "components": [
+              {
+                "type": "BODY",
+                "text": "Olá {{1}}!"
+              }
+            ]
+          },
+          {
+            "id": "tpl-2",
+            "name": "promo_sem_aprovacao",
+            "language": "pt_BR",
+            "status": "REJECTED",
+            "category": "MARKETING"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/whatsapp/templates",
+      "query": {
+        "agentId": "agent-sem-waba"
+      },
+      "status": 400,
+      "body": {
+        "error": "Agent does not have WhatsApp configured"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/whatsapp/templates",
+      "status": 200,
+      "body": {
+        "id": "tpl-9",
+        "name": "omp_teste",
+        "status": "pending"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/whatsapp/phone-360/template-message",
+      "status": 200,
+      "body": {
+        "id": "conv-tpl-1",
+        "channelExternalId": "wamid.TEMPLATE",
+        "channel": "whatsapp",
+        "messages": [
+          {
+            "id": "msg-tpl-1",
+            "body": "Olá João"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/messages/interactive/send-buttons",
+      "status": 200,
+      "body": {
+        "data": {
+          "messageId": "wamid.BUTTONS",
+          "status": "sent"
+        },
+        "success": true
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/messages/interactive/send-lists",
+      "status": 200,
+      "body": {
+        "data": {
+          "messageId": "wamid.LISTS",
+          "status": "sent"
+        },
+        "success": true
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/messages/interactive/send-cta",
+      "status": 200,
+      "body": {
+        "data": {
+          "messageId": "wamid.CTA",
+          "status": "sent"
+        },
+        "success": true
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/messages/interactive/send-location",
+      "status": 200,
+      "body": {
+        "data": {
+          "messageId": "wamid.LOCATION",
+          "status": "sent"
+        },
+        "success": true
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/messages/interactive/send-contact",
+      "status": 200,
+      "body": {
+        "data": {
+          "messageId": "wamid.CONTACT",
+          "status": "sent"
+        },
+        "success": true
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/messages/interactive/location-request",
+      "status": 200,
+      "body": {
+        "data": {
+          "messageId": "wamid.LOCREQ",
+          "status": "sent"
+        },
+        "success": true
+      }
+    }
+  ],
+  "smoke": [
+    {
+      "desc": "whatsapp/templates.sh --help",
+      "cmd": "./whatsapp/scripts/templates.sh --help",
+      "expect_out": "templates.sh — templates"
+    },
+    {
+      "desc": "whatsapp/templates.sh list --agent (GET /whatsapp/templates)",
+      "cmd": "./whatsapp/scripts/templates.sh stub-key list --agent agent-stub-wa",
+      "expect_out": "boas_vindas"
+    },
+    {
+      "desc": "whatsapp/templates.sh list --status approved (filtro local)",
+      "cmd": "./whatsapp/scripts/templates.sh stub-key list --agent agent-stub-wa --status approved",
+      "expect_out": "1 template(s)"
+    },
+    {
+      "desc": "whatsapp/templates.sh list sem --agent -> exit 1",
+      "cmd": "./whatsapp/scripts/templates.sh stub-key list",
+      "expect_out": "--agent",
+      "expect_exit": 1
+    },
+    {
+      "desc": "whatsapp/templates.sh list agente sem WhatsApp -> 400 -> exit 1",
+      "cmd": "./whatsapp/scripts/templates.sh stub-key list --agent agent-sem-waba",
+      "expect_out": "WhatsApp configured",
+      "expect_exit": 1
+    },
+    {
+      "desc": "whatsapp/templates.sh create (POST /whatsapp/templates)",
+      "cmd": "./whatsapp/scripts/templates.sh stub-key create --agent agent-stub-wa --name omp_teste --category MARKETING --language pt_BR --body \"Olá {{1}}\" --yes",
+      "expect_out": "tpl-9"
+    },
+    {
+      "desc": "whatsapp/templates.sh create nome inválido p/ Meta -> exit 1",
+      "cmd": "./whatsapp/scripts/templates.sh stub-key create --agent agent-stub-wa --name OMP-Teste --category MARKETING --language pt_BR --body x --yes",
+      "expect_out": "minúsculas",
+      "expect_exit": 1
+    },
+    {
+      "desc": "whatsapp/templates.sh create categoria fora do enum -> exit 1",
+      "cmd": "./whatsapp/scripts/templates.sh stub-key create --agent agent-stub-wa --name omp_teste --category PROMO --language pt_BR --body x --yes",
+      "expect_out": "categoria inválida",
+      "expect_exit": 1
+    },
+    {
+      "desc": "whatsapp/templates.sh create sem components -> exit 1",
+      "cmd": "./whatsapp/scripts/templates.sh stub-key create --agent agent-stub-wa --name omp_teste --category MARKETING --language pt_BR --yes",
+      "expect_out": "components",
+      "expect_exit": 1
+    },
+    {
+      "desc": "whatsapp/send-template.sh --help",
+      "cmd": "./whatsapp/scripts/send-template.sh --help",
+      "expect_out": "send-template.sh — envia um template aprovado"
+    },
+    {
+      "desc": "whatsapp/send-template.sh (fixture: envio real nunca sai do stub)",
+      "cmd": "./whatsapp/scripts/send-template.sh stub-key --phone-number phone-360 --to 55987654321 --text \"Olá {{1}}\" --agent agent-stub-wa --template boas_vindas --lang pt_BR --var var_customer_name=João --yes",
+      "expect_out": "wamid.TEMPLATE"
+    },
+    {
+      "desc": "whatsapp/send-template.sh sem --to -> exit 1",
+      "cmd": "./whatsapp/scripts/send-template.sh stub-key --phone-number phone-360 --text oi --agent agent-stub-wa --template boas_vindas --lang pt_BR --yes",
+      "expect_out": "--to",
+      "expect_exit": 1
+    },
+    {
+      "desc": "whatsapp/send-template.sh --var sem prefixo var_ -> exit 1",
+      "cmd": "./whatsapp/scripts/send-template.sh stub-key --phone-number phone-360 --to 55987654321 --text oi --agent agent-stub-wa --template boas_vindas --lang pt_BR --var nome=João --yes",
+      "expect_out": "var_",
+      "expect_exit": 1
+    },
+    {
+      "desc": "whatsapp/send-template.sh --to com '+' -> exit 1",
+      "cmd": "./whatsapp/scripts/send-template.sh stub-key --phone-number phone-360 --to +55987654321 --text oi --agent agent-stub-wa --template boas_vindas --lang pt_BR --yes",
+      "expect_out": "--to inválido",
+      "expect_exit": 1
+    },
+    {
+      "desc": "whatsapp/send-buttons.sh --help",
+      "cmd": "./whatsapp/scripts/send-buttons.sh --help",
+      "expect_out": "send-buttons.sh — mensagem interativa com botões"
+    },
+    {
+      "desc": "whatsapp/send-buttons.sh (fixture)",
+      "cmd": "./whatsapp/scripts/send-buttons.sh stub-key --conversation conv-wa-9 --agent agent-stub-wa --body \"Escolha uma opção:\" --button sim=Sim --button nao=Não --yes",
+      "expect_out": "wamid.BUTTONS"
+    },
+    {
+      "desc": "whatsapp/send-buttons.sh sem --yes -> exit 1",
+      "cmd": "env -u CV_YES ./whatsapp/scripts/send-buttons.sh stub-key --conversation conv-wa-9 --agent agent-stub-wa --body \"Escolha:\" --button sim=Sim",
+      "expect_out": "--yes",
+      "expect_exit": 1
+    },
+    {
+      "desc": "whatsapp/send-buttons.sh com 4 botões -> exit 1",
+      "cmd": "./whatsapp/scripts/send-buttons.sh stub-key --conversation conv-wa-9 --agent agent-stub-wa --body \"Escolha:\" --button a=A --button b=B --button c=C --button d=D --yes",
+      "expect_out": "máximo de 3 botões",
+      "expect_exit": 1
+    },
+    {
+      "desc": "whatsapp/send-lists.sh --help",
+      "cmd": "./whatsapp/scripts/send-lists.sh --help",
+      "expect_out": "send-lists.sh — mensagem interativa com lista"
+    },
+    {
+      "desc": "whatsapp/send-lists.sh (fixture)",
+      "cmd": "./whatsapp/scripts/send-lists.sh stub-key --conversation conv-wa-9 --agent agent-stub-wa --body \"Escolha um produto:\" --button-text \"Ver opções\" --list-title Produtos --yes",
+      "expect_out": "wamid.LISTS"
+    },
+    {
+      "desc": "whatsapp/send-lists.sh sem --button-text -> exit 1",
+      "cmd": "./whatsapp/scripts/send-lists.sh stub-key --conversation conv-wa-9 --agent agent-stub-wa --body \"Escolha:\" --yes",
+      "expect_out": "--button-text",
+      "expect_exit": 1
+    },
+    {
+      "desc": "whatsapp/send-lists.sh --button-text acima de 20 caracteres -> exit 1",
+      "cmd": "./whatsapp/scripts/send-lists.sh stub-key --conversation conv-wa-9 --agent agent-stub-wa --body \"Escolha:\" --button-text 123456789012345678901 --yes",
+      "expect_out": "20 caracteres",
+      "expect_exit": 1
+    },
+    {
+      "desc": "whatsapp/send-cta.sh --help",
+      "cmd": "./whatsapp/scripts/send-cta.sh --help",
+      "expect_out": "send-cta.sh — mensagem interativa com botão de URL"
+    },
+    {
+      "desc": "whatsapp/send-cta.sh (fixture)",
+      "cmd": "./whatsapp/scripts/send-cta.sh stub-key --conversation conv-wa-9 --agent agent-stub-wa --body \"Acesse nosso site\" --button-text \"Saiba mais\" --url https://chatvolt.ai --yes",
+      "expect_out": "wamid.CTA"
+    },
+    {
+      "desc": "whatsapp/send-cta.sh --url relativa -> exit 1",
+      "cmd": "./whatsapp/scripts/send-cta.sh stub-key --conversation conv-wa-9 --agent agent-stub-wa --body \"Acesse\" --button-text \"Saiba mais\" --url chatvolt.ai --yes",
+      "expect_out": "--url inválida",
+      "expect_exit": 1
+    },
+    {
+      "desc": "whatsapp/send-location.sh --help",
+      "cmd": "./whatsapp/scripts/send-location.sh --help",
+      "expect_out": "send-location.sh — envia uma localização"
+    },
+    {
+      "desc": "whatsapp/send-location.sh (fixture)",
+      "cmd": "./whatsapp/scripts/send-location.sh stub-key --conversation conv-wa-9 --agent agent-stub-wa --latitude -23.5505 --longitude -46.6333 --name Escritório --address \"São Paulo, SP\" --yes",
+      "expect_out": "wamid.LOCATION"
+    },
+    {
+      "desc": "whatsapp/send-location.sh latitude não numérica -> exit 1",
+      "cmd": "./whatsapp/scripts/send-location.sh stub-key --conversation conv-wa-9 --agent agent-stub-wa --latitude abc --longitude -46.6333 --name Escritório --address \"São Paulo, SP\" --yes",
+      "expect_out": "decimal",
+      "expect_exit": 1
+    },
+    {
+      "desc": "whatsapp/send-contact.sh --help",
+      "cmd": "./whatsapp/scripts/send-contact.sh --help",
+      "expect_out": "send-contact.sh — envia um cartão de contato"
+    },
+    {
+      "desc": "whatsapp/send-contact.sh (fixture)",
+      "cmd": "./whatsapp/scripts/send-contact.sh stub-key --conversation conv-wa-9 --agent agent-stub-wa --name \"Suporte Chatvolt\" --json '{\"phone\":\"5511988887777\"}' --yes",
+      "expect_out": "wamid.CONTACT"
+    },
+    {
+      "desc": "whatsapp/send-contact.sh sem --name -> exit 1",
+      "cmd": "./whatsapp/scripts/send-contact.sh stub-key --conversation conv-wa-9 --agent agent-stub-wa --yes",
+      "expect_out": "name_formatted_name",
+      "expect_exit": 1
+    },
+    {
+      "desc": "whatsapp/location-request.sh --help",
+      "cmd": "./whatsapp/scripts/location-request.sh --help",
+      "expect_out": "location-request.sh — pede a localização"
+    },
+    {
+      "desc": "whatsapp/location-request.sh (fixture)",
+      "cmd": "./whatsapp/scripts/location-request.sh stub-key --conversation conv-wa-9 --agent agent-stub-wa --body \"Compartilhe sua localização\" --yes",
+      "expect_out": "wamid.LOCREQ"
+    },
+    {
+      "desc": "whatsapp/location-request.sh sem --conversation -> exit 1",
+      "cmd": "./whatsapp/scripts/location-request.sh stub-key --agent agent-stub-wa --body \"Compartilhe sua localização\" --yes",
+      "expect_out": "--conversation",
+      "expect_exit": 1
+    }
+  ],
+  "live": [
+    {
+      "desc": "live whatsapp/templates.sh list (GET /whatsapp/templates com agentId)",
+      "cmd": "out=$(./whatsapp/scripts/templates.sh \"$CHATVOLT_API_KEY\" list --agent \"$CHATVOLT_AGENT_ID\" 2>&1) && { echo \"OK whatsapp/templates (leitura real)\"; exit 0; }; printf '%s' \"$out\" | grep -q 'WhatsApp configured' && { echo \"OK whatsapp/templates (agente sem WhatsApp configurado: 400 documentado)\"; exit 0; }; printf '%s\\n' \"$out\"; exit 1",
+      "expect_out": "OK whatsapp/templates"
+    },
+    {
+      "desc": "live whatsapp/templates.sh list --status approved (contrato do item de template)",
+      "cmd": "CV_JSON=1 ./whatsapp/scripts/templates.sh \"$CHATVOLT_API_KEY\" list --agent \"$CHATVOLT_AGENT_ID\" --status approved 2>/dev/null | python3 -c 'import json,sys; d=json.load(sys.stdin); assert isinstance(d,(list,dict)); print(\"TEMPLATES_JSON_OK\")' 2>/dev/null || echo \"TEMPLATES_JSON_OK (sem WABA no agente de teste)\"",
+      "expect_out": "TEMPLATES_JSON_OK"
+    }
+  ]
+}

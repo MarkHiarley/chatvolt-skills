@@ -1,0 +1,138 @@
+{
+  "skill": "api-call",
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/contacts",
+      "status": 200,
+      "body": {
+        "contacts": [
+          {
+            "id": "contact-1",
+            "email": "cliente@exemplo.test",
+            "phoneNumber": "5511900000000",
+            "firstName": "Albertina",
+            "lastName": "Souza"
+          }
+        ],
+        "pagination": { "total": 1, "offset": 0, "limit": 1 }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/dispatches/contacts/lists",
+      "status": 200,
+      "body": {
+        "lists": [
+          { "id": "list-1", "name": "lista-stub", "createdAt": "2026-10-01T10:00:00.000Z" }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/conversations/conv-api-1/export",
+      "status": 200,
+      "raw": "id,canal,mensagem\nconv-api-1,api,Bom dia\n"
+    },
+    {
+      "method": "GET",
+      "path": "/crm/scenario",
+      "status": 200,
+      "body": [
+        { "id": "scenario-1", "name": "CENÁRIO STUB", "description": "cenário de teste" }
+      ]
+    }
+  ],
+  "smoke": [
+    {
+      "desc": "api-call/catalog.sh --group crm",
+      "cmd": "./api-call/scripts/catalog.sh --group crm",
+      "expect_out": "/crm/scenario"
+    },
+    {
+      "desc": "api-call/catalog.sh --list-groups",
+      "cmd": "./api-call/scripts/catalog.sh --list-groups",
+      "expect_out": "OPERAÇÕES"
+    },
+    {
+      "desc": "api-call/catalog.sh --available-only",
+      "cmd": "./api-call/scripts/catalog.sh --available-only --filter 'crm|agents'",
+      "expect_out": "disponível"
+    },
+    {
+      "desc": "api-call/call.sh GET /agents/models (endpoint público)",
+      "cmd": "./api-call/scripts/call.sh stub-key GET /agents/models",
+      "expect_out": "gpt_54_nano"
+    },
+    {
+      "desc": "api-call/call.sh GET /contacts (objeto {contacts:[...]})",
+      "cmd": "./api-call/scripts/call.sh stub-key GET /contacts --query limit=1",
+      "expect_out": "Albertina"
+    },
+    {
+      "desc": "api-call/call.sh GET /dispatches/contacts/lists --all",
+      "cmd": "./api-call/scripts/call.sh stub-key GET /dispatches/contacts/lists --all",
+      "expect_out": "lista-stub"
+    },
+    {
+      "desc": "api-call/call.sh --out (resposta binária)",
+      "cmd": "./api-call/scripts/call.sh stub-key GET /conversations/conv-api-1/export --out /tmp/cv-export.csv && grep -q 'conv-api-1' /tmp/cv-export.csv && echo EXPORT_OK",
+      "expect_out": "EXPORT_OK"
+    },
+    {
+      "desc": "api-call/call.sh POST com --json (valida JSON antes de enviar)",
+      "cmd": "./api-call/scripts/call.sh stub-key POST /agents/agent-1/query --json '{\"query\":\"oi\"}'",
+      "expect_out": "PONG-STUB"
+    },
+    {
+      "desc": "api-call/call.sh rejeita JSON inválido",
+      "cmd": "./api-call/scripts/call.sh stub-key POST /agents/agent-1/query --json '{invalido'",
+      "expect_out": "JSON válido",
+      "expect_exit": 1
+    },
+    {
+      "desc": "api-call/call.sh sem caminho inicial /",
+      "cmd": "./api-call/scripts/call.sh stub-key GET agents",
+      "expect_out": "começar com /",
+      "expect_exit": 1
+    },
+    {
+      "desc": "api-call/call.sh quota 402 -> exit 3",
+      "cmd": "./api-call/scripts/call.sh stub-key GET /quota-me",
+      "expect_out": "quota",
+      "expect_exit": 3
+    },
+    {
+      "desc": "api-call/call.sh key inválida -> exit 1",
+      "cmd": "./api-call/scripts/call.sh key-errada GET /agents",
+      "expect_out": "não autorizado",
+      "expect_exit": 1
+    }
+  ],
+  "live": [
+    {
+      "desc": "live api-call GET /agents/models",
+      "cmd": "./api-call/scripts/call.sh \"$CHATVOLT_API_KEY\" GET /agents/models >/dev/null"
+    },
+    {
+      "desc": "live api-call GET /conversation (filtro por agente)",
+      "cmd": "./api-call/scripts/call.sh \"$CHATVOLT_API_KEY\" GET /conversation --query agentId=\"$CHATVOLT_AGENT_ID\" --query limit=2 >/dev/null"
+    },
+    {
+      "desc": "live api-call GET /artifacts",
+      "cmd": "./api-call/scripts/call.sh \"$CHATVOLT_API_KEY\" GET /artifacts --query limit=1 >/dev/null"
+    },
+    {
+      "desc": "live api-call GET /crm/scenario",
+      "cmd": "./api-call/scripts/call.sh \"$CHATVOLT_API_KEY\" GET /crm/scenario >/dev/null"
+    },
+    {
+      "desc": "live api-call GET /dispatches",
+      "cmd": "./api-call/scripts/call.sh \"$CHATVOLT_API_KEY\" GET /dispatches >/dev/null"
+    },
+    {
+      "desc": "live api-call GET /contacts",
+      "cmd": "./api-call/scripts/call.sh \"$CHATVOLT_API_KEY\" GET /contacts --query limit=1 >/dev/null"
+    }
+  ]
+}

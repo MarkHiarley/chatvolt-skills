@@ -1,0 +1,261 @@
+{
+  "skill": "agent-admin",
+  "routes": [
+    {
+      "method": "POST",
+      "path": "/agents",
+      "status": 200,
+      "body": {
+        "id": "agent-novo-1",
+        "name": "Agente Novo",
+        "description": "agente criado no stub",
+        "modelName": "gpt_54_nano",
+        "visibility": "private",
+        "handle": "agente-novo",
+        "systemPrompt": "Você é um agente de teste."
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/agents/agent-1",
+      "status": 200,
+      "body": {
+        "id": "agent-1",
+        "name": "Agente Stub",
+        "description": "agente de teste offline",
+        "modelName": "gpt_54_nano"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/agent-whitelist-whatsapp/agent-1",
+      "status": 200,
+      "body": [
+        { "agentId": "agent-1", "whatsappNumber": "5511999998888" }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/agent-whitelist-whatsapp",
+      "status": 200,
+      "body": [
+        { "agentId": "agent-1", "whatsappNumber": "5511999998888" }
+      ]
+    },
+    {
+      "method": "PATCH",
+      "path": "/agent-whitelist-whatsapp/agent-1",
+      "status": 200,
+      "body": { "agentId": "agent-1", "whatsappNumber": "5511988887777" }
+    },
+    {
+      "method": "DELETE",
+      "path": "/agent-whitelist-whatsapp/agent-1",
+      "status": 200,
+      "body": { "message": "Whitelist entry deleted successfully." }
+    },
+    {
+      "method": "GET",
+      "path": "/agent-blacklist",
+      "status": 404,
+      "body": { "error": "NOT_FOUND" }
+    },
+    {
+      "method": "GET",
+      "path": "/agent-blacklist/agent-1",
+      "status": 200,
+      "body": [
+        {
+          "id": "entry-1",
+          "agentId": "agent-1",
+          "userIdentify": "user@exemplo.test",
+          "organizationId": "org-stub"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/agent-blacklist",
+      "status": 200,
+      "body": [
+        {
+          "id": "entry-1",
+          "agentId": "agent-1",
+          "userIdentify": "user@exemplo.test",
+          "organizationId": "org-stub"
+        }
+      ]
+    },
+    {
+      "method": "DELETE",
+      "path": "/agent-blacklist/agent-1",
+      "query": { "id": "entry-1" },
+      "status": 204,
+      "raw": ""
+    },
+    {
+      "method": "POST",
+      "path": "/forms/form-1/chat",
+      "status": 200,
+      "body": {
+        "data": { "conversationId": "conv-form-1", "messageId": "m-f1" },
+        "success": true
+      }
+    }
+  ],
+  "smoke": [
+    {
+      "desc": "list-agents.sh (array na raiz)",
+      "cmd": "./agent-admin/scripts/list-agents.sh stub-key",
+      "expect_out": "Agente Stub"
+    },
+    {
+      "desc": "list-agents.sh --filter",
+      "cmd": "./agent-admin/scripts/list-agents.sh stub-key --filter 'agente stub'",
+      "expect_out": "Agente Stub"
+    },
+    {
+      "desc": "list-agents.sh --limit inválido",
+      "cmd": "./agent-admin/scripts/list-agents.sh stub-key --limit abc",
+      "expect_out": "deve ser um inteiro",
+      "expect_exit": 1
+    },
+    {
+      "desc": "list-agents.sh key inválida -> exit 1",
+      "cmd": "./agent-admin/scripts/list-agents.sh key-errada",
+      "expect_out": "não autorizado",
+      "expect_exit": 1
+    },
+
+    {
+      "desc": "create-agent.sh (name+description+systemPrompt)",
+      "cmd": "./agent-admin/scripts/create-agent.sh stub-key --name 'Agente Novo' --description 'agente criado no stub' --system-prompt 'Você é um agente de teste.'",
+      "expect_out": "Agente criado."
+    },
+    {
+      "desc": "create-agent.sh sem --description -> exit 1",
+      "cmd": "./agent-admin/scripts/create-agent.sh stub-key --name 'X' --system-prompt 'y'",
+      "expect_out": "é obrigatório",
+      "expect_exit": 1
+    },
+    {
+      "desc": "create-agent.sh key inválida -> exit 1",
+      "cmd": "./agent-admin/scripts/create-agent.sh key-errada --name X --description Y --system-prompt Z",
+      "expect_out": "não autorizado",
+      "expect_exit": 1
+    },
+
+    {
+      "desc": "delete-agent.sh (lê antes e confirma via CV_YES)",
+      "cmd": "./agent-admin/scripts/delete-agent.sh stub-key agent-1",
+      "expect_out": "deletado"
+    },
+    {
+      "desc": "delete-agent.sh sem id -> exit 1",
+      "cmd": "./agent-admin/scripts/delete-agent.sh stub-key",
+      "expect_out": "informe o id do agente",
+      "expect_exit": 1
+    },
+    {
+      "desc": "delete-agent.sh key inválida -> exit 1",
+      "cmd": "./agent-admin/scripts/delete-agent.sh key-errada agent-1",
+      "expect_out": "não autorizado",
+      "expect_exit": 1
+    },
+
+    {
+      "desc": "whitelist.sh list",
+      "cmd": "./agent-admin/scripts/whitelist.sh stub-key list agent-1",
+      "expect_out": "5511999998888"
+    },
+    {
+      "desc": "whitelist.sh add",
+      "cmd": "./agent-admin/scripts/whitelist.sh stub-key add agent-1 5511999998888",
+      "expect_out": "5511999998888"
+    },
+    {
+      "desc": "whitelist.sh update",
+      "cmd": "./agent-admin/scripts/whitelist.sh stub-key update agent-1 5511999998888 5511988887777",
+      "expect_out": "5511988887777"
+    },
+    {
+      "desc": "whitelist.sh remove",
+      "cmd": "./agent-admin/scripts/whitelist.sh stub-key remove agent-1 5511999998888",
+      "expect_out": "Whitelist entry deleted"
+    },
+    {
+      "desc": "whitelist.sh add sem número -> exit 1",
+      "cmd": "./agent-admin/scripts/whitelist.sh stub-key add agent-1",
+      "expect_out": "ao menos um número",
+      "expect_exit": 1
+    },
+    {
+      "desc": "whitelist.sh key inválida -> exit 1",
+      "cmd": "./agent-admin/scripts/whitelist.sh key-errada list agent-1",
+      "expect_out": "não autorizado",
+      "expect_exit": 1
+    },
+
+    {
+      "desc": "blacklist.sh list (404 no ambiente -> mensagem clara)",
+      "cmd": "./agent-admin/scripts/blacklist.sh stub-key list",
+      "expect_out": "NÃO estão expostas",
+      "expect_exit": 1
+    },
+    {
+      "desc": "blacklist.sh list <agent-id>",
+      "cmd": "./agent-admin/scripts/blacklist.sh stub-key list agent-1",
+      "expect_out": "user@exemplo.test"
+    },
+    {
+      "desc": "blacklist.sh add",
+      "cmd": "./agent-admin/scripts/blacklist.sh stub-key add agent-1 user@exemplo.test",
+      "expect_out": "Blacklist atualizada"
+    },
+    {
+      "desc": "blacklist.sh remove (204 sem corpo)",
+      "cmd": "./agent-admin/scripts/blacklist.sh stub-key remove agent-1 entry-1",
+      "expect_out": "removida"
+    },
+    {
+      "desc": "blacklist.sh add sem identificador -> exit 1",
+      "cmd": "./agent-admin/scripts/blacklist.sh stub-key add agent-1",
+      "expect_out": "ao menos um identificador",
+      "expect_exit": 1
+    },
+    {
+      "desc": "blacklist.sh key inválida -> exit 1",
+      "cmd": "./agent-admin/scripts/blacklist.sh key-errada list agent-1",
+      "expect_out": "não autorizado",
+      "expect_exit": 1
+    },
+
+    {
+      "desc": "submit-form.sh",
+      "cmd": "./agent-admin/scripts/submit-form.sh stub-key form-1 --field 'Nome=Ana'",
+      "expect_out": "conv-form-1"
+    },
+    {
+      "desc": "submit-form.sh sem --field -> exit 1",
+      "cmd": "./agent-admin/scripts/submit-form.sh stub-key form-1",
+      "expect_out": "ao menos um --field",
+      "expect_exit": 1
+    },
+    {
+      "desc": "submit-form.sh key inválida -> exit 1",
+      "cmd": "./agent-admin/scripts/submit-form.sh key-errada form-1 --field 'Nome=Ana'",
+      "expect_out": "não autorizado",
+      "expect_exit": 1
+    }
+  ],
+  "live": [
+    {
+      "desc": "live agent-admin list-agents.sh",
+      "cmd": "key=\"${CHATVOLT_API_KEY:-}\"; [ -n \"$key\" ] || exit 0; ./agent-admin/scripts/list-agents.sh \"$key\" >/dev/null"
+    },
+    {
+      "desc": "live agent-admin whitelist.sh list (exige CHATVOLT_AGENT_ID)",
+      "cmd": "key=\"${CHATVOLT_API_KEY:-}\"; a=\"${CHATVOLT_AGENT_ID:-}\"; [ -n \"$key\" ] && [ -n \"$a\" ] || exit 0; ./agent-admin/scripts/whitelist.sh \"$key\" list \"$a\" >/dev/null"
+    }
+  ]
+}
