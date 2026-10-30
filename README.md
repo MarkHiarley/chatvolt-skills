@@ -16,7 +16,7 @@ Skills para o **pi** (agente de IA) que permitem gerenciar, testar e ajustar age
 | **api-call** | Chama qualquer endpoint da API (136 operações) e lista o catálogo de rotas disponíveis |
 | **contacts** | Gerencia contatos e variáveis de contato |
 | **conversation-actions** | Ações de atendimento: assign, status, prioridade, IA, notas, tags, variáveis, envio, export |
-| **agent-admin** | Cria/lista/deleta agentes, whitelist e envio de formulário ao agente |
+| **agent-admin** | Cria/lista/deleta agentes, gera o prompt por IA, checa handle livre, lista templates, whitelist e envio de formulário ao agente |
 | **artifacts** | Catálogo de artefatos, categorias, mídia (upload) e busca |
 | **crm** | Cenários, etapas, logs de conversa e eventos em tempo real (SSE) |
 | **dispatches** | Disparos em massa, listas de contatos e fila de envio |
@@ -24,6 +24,11 @@ Skills para o **pi** (agente de IA) que permitem gerenciar, testar e ajustar age
 | **integrations** | Envio por Twilio, Z-API e Zapper |
 | **tags** | Tags da organização (indisponível neste plano: as rotas respondem 404) |
 | **mercadolivre** | Produtos sincronizados do Mercado Livre |
+
+> **Atualizações:** toda skill roda `scripts/check-updates.sh` ao ser carregada (Passo 0 no
+> `SKILL.md`). Ela avisa quando a doc OpenAPI (docs.chatvolt.ai), as operações da fonte da doc
+> ou o código-fonte `appchatvolt_dev` mudaram. Desligue com `CV_UPDATE_CHECK=0`; aponte o clone
+> com `CV_SRC=/caminho/do/appchatvolt_dev`. Detalhes em [SOURCES.md](SOURCES.md), seção 8.
 
 ---
 
@@ -261,6 +266,109 @@ $env:CHATVOLT_AGENT_ID = "seu-agent-id"
 ```
 
 ---
+
+## Instalar em outras ferramentas (Claude, Codex, Gemini)
+
+As skills são pastas com um `SKILL.md`, no formato do padrão aberto Agent Skills. Por isso
+funcionam em várias ferramentas, desde que cada uma leia a pasta do lugar certo. A tabela
+resume onde cada ferramenta procura as skills. Os caminhos vêm da documentação oficial de cada
+ferramenta, pesquisada em 2026-10-30.
+
+| Ferramenta | Versão | Onde instalar | Como usar |
+|---|---|---|---|
+| Claude Code (CLI, extensão de IDE) | local | `~/.claude/skills/` (global) ou `.claude/skills/` (projeto) | automática, ou `/nome-da-skill` |
+| Claude Desktop | desktop | Customize > Skills > Add > Upload skill (zip de cada pasta) | automática |
+| Claude.ai | web | Settings > Capabilities > Skills (zip de cada pasta), com code execution ligado | automática |
+| Codex (CLI, extensão de IDE, app desktop) | local | `~/.agents/skills/` (global) ou `.agents/skills/` (projeto) | `$nome-da-skill` ou `/skills` |
+| Gemini CLI | local | `~/.gemini/skills/` ou `~/.agents/skills/` | `/skills list` no chat |
+| Gemini (app e gemini.google.com) | web / desktop / mobile | Skills na barra lateral: upload de pasta com `SKILL.md` | automática |
+
+> **Antes de começar:** as skills chamam scripts `bash` que usam `curl` e `python3`. Defina a chave
+> com `export CHATVOLT_API_KEY=...` (ou passe como primeiro argumento). No Windows, use Git Bash
+> ou WSL para os scripts. Nos links com symlink, a checagem de atualizações (Passo 0) continua
+> funcionando, porque segue o link até o repo.
+
+### Claude Code
+
+Claude Code lê a pasta global `~/.claude/skills/`. Para ter as skills em todos os projetos,
+crie links simbólicos para cada pasta:
+
+```bash
+REPO=/caminho/para/chatvolt-skills
+DEST=~/.claude/skills
+mkdir -p "$DEST"
+for s in agent-test investigation prompt-adjust tools-update conversation-cleanup datastore-add datastore-tags api-call contacts conversation-actions agent-admin artifacts crm dispatches whatsapp integrations tags mercadolivre; do ln -sfn "$REPO/$s" "$DEST/$s"; done
+```
+
+Reinicie o Claude Code. Para atualizar as skills, faça `git pull` no repo: o link já aponta para
+a versão nova.
+
+### Claude Desktop e Claude.ai (web)
+
+Nessas versões, cada skill é enviada como um arquivo zip. Gere um zip por pasta:
+
+```bash
+REPO=/caminho/para/chatvolt-skills
+OUT=~/chatvolt-skills-zips
+mkdir -p "$OUT"
+for s in agent-test investigation prompt-adjust tools-update conversation-cleanup datastore-add datastore-tags api-call contacts conversation-actions agent-admin artifacts crm dispatches whatsapp integrations tags mercadolivre; do (cd "$REPO" && python3 -m zipfile -c "$OUT/$s.zip" "$s"); done
+```
+
+- **Claude Desktop**: abra Customize > Skills, selecione Add e depois Upload skill. Envie um zip por vez.
+- **Claude.ai**: ative code execution em Settings > Capabilities e depois envie os zips em Settings > Capabilities > Skills. O plano precisa incluir skills (Pro, Max, Team ou Enterprise).
+
+**Limitação:** as skills rodam no sandbox da Claude, e não confirmei se esse sandbox alcança
+`api.chatvolt.ai` e `chat-volt.mintlify.app`. Teste primeiro com uma operação sem efeito, como
+`check-handle.sh` ou `list-agents.sh`.
+
+### Codex (CLI, extensão de IDE e app desktop)
+
+O Codex lê `~/.agents/skills/` (global) e `.agents/skills/` (dentro do repo). Também lê o caminho
+antigo `~/.codex/skills/`:
+
+```bash
+REPO=/caminho/para/chatvolt-skills
+DEST=~/.agents/skills
+mkdir -p "$DEST"
+for s in agent-test investigation prompt-adjust tools-update conversation-cleanup datastore-add datastore-tags api-call contacts conversation-actions agent-admin artifacts crm dispatches whatsapp integrations tags mercadolivre; do ln -sfn "$REPO/$s" "$DEST/$s"; done
+```
+
+Para usar, digite `$` e o nome da skill, ou `/skills` para escolher da lista.
+
+Não encontrei documentação oficial de skills para o Codex na versão web (cloud). A doc oficial
+cita a CLI, a extensão de IDE e o app desktop.
+
+### Gemini CLI
+
+O Gemini CLI lê `~/.gemini/skills/` e `~/.agents/skills/` (globais), e `.gemini/skills/` (projeto).
+A forma mais segura é o link simbólico, igual aos outros:
+
+```bash
+REPO=/caminho/para/chatvolt-skills
+DEST=~/.gemini/skills
+mkdir -p "$DEST"
+for s in agent-test investigation prompt-adjust tools-update conversation-cleanup datastore-add datastore-tags api-call contacts conversation-actions agent-admin artifacts crm dispatches whatsapp integrations tags mercadolivre; do ln -sfn "$REPO/$s" "$DEST/$s"; done
+```
+
+No chat, `/skills list` mostra as skills encontradas. Existe também o comando
+`gemini skills install <fonte>`, mas não confirmei quais fontes ele aceita além de URLs.
+
+### Gemini (app e gemini.google.com)
+
+Em Skills, no app ou no site, dá para criar uma skill ou enviar uma pasta com `SKILL.md`. Segundo
+a ajuda do Google, a função está disponível no app mobile, no app Mac e em gemini.google.com.
+
+**Limitação:** a ajuda do Google não fala em executar scripts. Sem um shell local, os scripts das
+skills não rodam. Nesse caso, a skill funciona só como instruções. Para o fluxo completo, use o
+Gemini CLI.
+
+### Links da documentação oficial
+
+- Claude Code: <https://code.claude.com/docs/en/skills>
+- Claude (web): <https://support.claude.com/en/articles/12512180-use-skills-in-claude>
+- Codex: <https://learn.chatgpt.com/docs/build-skills>
+- Gemini CLI: <https://geminicli.com/docs/cli/skills/>
+- Gemini (app): <https://support.google.com/gemini/answer/17094296>
 
 ## Conectando o pi com OpenCode
 

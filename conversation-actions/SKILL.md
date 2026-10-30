@@ -20,6 +20,16 @@ de escrever quando o risco justifica.
 > e o `id` da conversa. Para atribuir, o e-mail/id/membership do atendente;
 > para exportar, um caminho de arquivo (`--out`).
 
+## Passo 0 — verificar atualizações
+
+Toda vez que esta skill é carregada, rode a checagem antes de operar (leva ~1s e não bloqueia):
+
+```bash
+scripts/check-updates.sh
+```
+
+Ela compara a doc OpenAPI publicada (docs.chatvolt.ai), as operações da fonte da doc e o código-fonte do Chatvolt com o que as skills conhecem. Se aparecer `MUDOU`, `fora do catálogo` ou `Código-fonte MUDOU`, **avise o usuário** antes de agir e diga o que mudou — a lista vem no próprio relatório. Sem rede, a skill segue normalmente. `CV_UPDATE_CHECK=0` desliga a checagem.
+
 ## Como funciona
 
 1. Você informa a **API key** (1º argumento ou `CHATVOLT_API_KEY`) e o

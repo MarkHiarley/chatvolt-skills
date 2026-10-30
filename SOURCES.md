@@ -166,3 +166,271 @@ Disponibilidade verificada (2026-10-12, plano/organização de teste):
 Todas as 136 operações publicadas têm skill dedicada ou ficam acessíveis por `api-call/scripts/call.sh`
 (que não depende de contrato específico). O único endpoint que **não** é utilizável como cliente é
 `POST /webhook/webhook` (recebimento de payload externo pela plataforma).
+
+## 8. Código-fonte e checagem de atualizações (2026-10-30)
+
+O código da API pública está no monorepo `appchatvolt_dev` (`apps/dashboard/pages/api`).
+O `next.config.js` mapeia o host `api.chatvolt.ai` para essas rotas (`/agents/:path*` →
+`/api/agents/:path*`, e assim por diante). Por isso, uma rota existir em `pages/api` **não**
+garante que ela é pública: a API pública é só o que está nas regras de rewrite com
+`has: host api.chatvolt.ai`.
+
+Autenticação: `packages/lib/auth.ts` marca a sessão com `authType` = `apiKey` (chave `Bearer`)
+ou `session` (login no dashboard). Rotas que checam `authType === 'session'` não aceitam chave.
+
+**Verificado só no código-fonte (não ao vivo):**
+
+- `POST /agents/generate-prompt`, `POST /agents/check-handle-available` e
+  `GET /agent-templates/{organizationId}` aceitam API key. Contratos na seção de
+  `agent-admin/SKILL.md`.
+- `POST /agents/{id}/clone` exige sessão de SUPERADMIN; com API key responde 403.
+- `GET /agent-templates/{organizationId}` só aceita a organização de templates configurada
+  (`NEXT_PUBLIC_ORGANIZATION_ID_TEMPLATES`); outro id responde 404.
+
+**Operações publicadas em `apps/docs` sem cobertura:** agora estão documentadas na seção 9 (com a situação real de cada uma). Com o catálogo atualizado, a checagem não lista mais essas operações como pendentes.
+
+**Checagem de atualizações (`scripts/check-updates.sh`, função `cv_check_updates` em `_lib.sh`):**
+
+- Compara o OpenAPI publicado (`https://chat-volt.mintlify.app/openapi.yaml`, mesmo conteúdo do
+  `chatvolt-docs/openapi.yaml`) com o catálogo `api-call/data/endpoints.json`, e guarda o sha
+  para detectar mudanças entre execuções.
+- Lista as operações de `apps/docs` fora do catálogo.
+- Compara o HEAD do clone local `appchatvolt_dev` (`CV_SRC`) com o último visto e lista os
+  arquivos de API/doc alterados. O clone não é atualizado sozinho: use `git pull` nele.
+- Estado em `${CV_STATE_DIR:-~/.local/state/chatvolt-skills}/updates.json`. `CV_UPDATE_CHECK=0`
+  desliga; sem rede, a checagem vira um aviso e a skill segue.
+
+## 9. Operações documentadas em `apps/docs` (situação verificada no código, 2026-10-30)
+
+Fonte: `apps/docs/api-reference/endpoint/**/*.mdx` (a fonte do docs.chatvolt.ai). Estas 16
+operações foram adicionadas a `api-call/data/endpoints.json` com a situação abaixo. **Nenhuma foi
+testada ao vivo** (sem chave de teste nesta sessão). A coluna "Código" vem de
+`apps/dashboard/pages/api` e das rewrites de `next.config.js`.
+
+| Operação | Código | Situação |
+|---|---|---|
+| `POST /crm/card` | existe; **400 ao vivo** sem corpo (`agentId is required`), ou seja, rota existe | A página da doc está vazia: corpo e resposta não documentados |
+| `GET /api/logs/{conversationId}/assignment-history` | existe (`logs/[id]/assignment-history.ts`); **200 ao vivo** em `api.chatvolt.ai/api/logs/{id}/...` (sem `/api`: 404) | Resposta documentada: `periods`, `legacy`, `hasMore` |
+| `POST /whatsapp/conversion-tracking` | existe; **400 ao vivo** sem corpo (exige conversa identificável), ou seja, rota existe | Doc completa (Meta CAPI para CTWA) |
+| `POST /datastores/file-upload/generate-link/{datastoreId}` | existe, via rewrite para `external/datastores/file-upload/generate-link` | Corpo: `type`, `fileName`. Resposta: `id`, `link` |
+| `POST /datastores/file-upload/{datastoreId}` | existe, via rewrite para `external/datastores/file-upload` | Corpo: `id` (do link gerado) |
+| `POST /datastores/update/{datastoreId}` | existe, via rewrite para `external/datastores/update` | **Deprecated** na doc |
+| `POST /datastores/upsert/{datastoreId}` | existe, via rewrite para `external/datastores/upsert` | **Deprecated** na doc |
+| `POST /datastores/query/{datastore_id}/old` | **não encontrado**; **404 ao vivo** (página do Next.js) | A doc a apresenta como existente; sem rota correspondente |
+| `GET /conversation-event-log` | sem rota; **404 ao vivo** | **Indisponível**: a doc diz que a implementação está desativada temporariamente |
+| `DELETE /dispatches/contacts/link` | sem rota | Não implementado (a doc diz "not yet implemented"). `GET` ao vivo responde 404 `not found` (texto puro) |
+| `GET /dispatches/contacts/link` | sem rota | Não implementado |
+| `GET /dispatches/{id}` | sem rota | Não implementado; a doc manda usar `GET /dispatches` |
+| `GET /crm/scenario/{scenarioId}` | sem rota | Não implementado; a doc manda usar `GET /crm/scenario` |
+| `GET /crm/step/{stepId}` | sem rota | Não implementado; a doc manda usar `GET /crm/step` |
+| `GET /crm/step/{stepId}/conversation` | sem rota | Não implementado |
+| `POST /crm/scenario/{scenarioId}/conversation` | sem rota | Não implementado |
+
+**Implicação para as skills:** operações "não implementadas" ou "indisponíveis" não devem virar
+scripts. O `check-updates.sh` deixa de listar as 16 como pendentes porque estão no catálogo.
+
+
+## 10. Rotas no código sem documentação (2026-10-30)
+
+Rotas encontradas em `apps/dashboard/pages/api` que não estão no catálogo nem em `apps/docs`.
+Foram listadas para que nada fique fora do repositório. **Não foram testadas**, e algumas podem
+exigir sessão do dashboard (checagem `authType === 'session'` no handler, ou escrita restrita).
+Não confirmei quais delas o host `api.chatvolt.ai` expõe pelas rewrites, porque o mapeamento
+completo não está todo lido. **A rota `POST /agents/{id}/clone` foi deixada de fora**, a pedido:
+ela só aceita sessão de SUPERADMIN.
+
+Método extraído de `handler.get/post/put/patch/delete(...)` e das strings de método no arquivo.
+Se o arquivo tiver mais de um método, cada um aparece em sua linha.
+
+**`/agent-whitelist-whatsapp`**
+- `GET /agent-whitelist-whatsapp` — `apps/dashboard/pages/api/agent-whitelist-whatsapp/index.ts`
+- `PUT /agent-whitelist-whatsapp/{}` — `apps/dashboard/pages/api/agent-whitelist-whatsapp/[agentId]/index.ts`
+
+**`/agents`**
+- `DELETE /agents/{}/artifact-categories` — `apps/dashboard/pages/api/agents/[id]/artifact-categories.ts`
+- `DELETE /agents/{}/crm-config` — `apps/dashboard/pages/api/agents/[id]/crm-config/index.ts`
+- `GET /agents` — `apps/dashboard/pages/api/agents/index.ts`
+- `GET /agents/{}/artifact-categories` — `apps/dashboard/pages/api/agents/[id]/artifact-categories.ts`
+- `GET /agents/{}/crm-config` — `apps/dashboard/pages/api/agents/[id]/crm-config/index.ts`
+- `GET /agents/{}/public` — `apps/dashboard/pages/api/agents/[id]/public.ts`
+- `GET /agents/{}/quick-messages` — `apps/dashboard/pages/api/agents/[id]/quick-messages.ts`
+- `GET /agents/{}/tags` — `apps/dashboard/pages/api/agents/[id]/tags.tsx`
+- `GET /agents/{}/tool-config` — `apps/dashboard/pages/api/agents/[id]/tool-config.ts`
+- `POST /agents/generate-qa` — `apps/dashboard/pages/api/agents/generate-qa.ts`
+- `POST /agents/query` — `apps/dashboard/pages/api/agents/query.ts`
+- `POST /agents/{}/artifact-categories` — `apps/dashboard/pages/api/agents/[id]/artifact-categories.ts`
+- `POST /agents/{}/capture` — `apps/dashboard/pages/api/agents/[id]/capture.tsx`
+- `POST /agents/{}/crm-config` — `apps/dashboard/pages/api/agents/[id]/crm-config/index.ts`
+- `POST /agents/{}/generate-upload-link` — `apps/dashboard/pages/api/agents/[id]/generate-upload-link.ts`
+- `POST /agents/{}/simplequery` — `apps/dashboard/pages/api/agents/[id]/simplequery.tsx`
+- `PUT /agents/{}/artifact-categories` — `apps/dashboard/pages/api/agents/[id]/artifact-categories.ts`
+- `PUT /agents/{}/quick-messages` — `apps/dashboard/pages/api/agents/[id]/quick-messages.ts`
+
+**`/artifact-categories`**
+- `POST /artifact-categories/import` — `apps/dashboard/pages/api/artifact-categories/import.ts`
+
+**`/artifacts`**
+- `GET /artifacts/media-by-name` — `apps/dashboard/pages/api/artifacts/media-by-name.ts`
+- `POST /artifacts/import-whatsapp` — `apps/dashboard/pages/api/artifacts/import-whatsapp.ts`
+- `POST /artifacts/searches/log` — `apps/dashboard/pages/api/artifacts/searches/log.ts`
+
+**`/contacts`**
+- `DELETE /contacts/batch-delete` — `apps/dashboard/pages/api/contacts/batch-delete.ts`
+- `DELETE /contacts/bulk-delete-by-filter` — `apps/dashboard/pages/api/contacts/bulk-delete-by-filter.ts`
+- `GET /contacts/ctwa-ads` — `apps/dashboard/pages/api/contacts/ctwa-ads.ts`
+- `POST /contacts/batch-create` — `apps/dashboard/pages/api/contacts/batch-create.ts`
+- `POST /contacts/export` — `apps/dashboard/pages/api/contacts/export.ts`
+- `POST /contacts/import-csv` — `apps/dashboard/pages/api/contacts/import-csv.ts`
+- `POST /contacts/merge` — `apps/dashboard/pages/api/contacts/merge.ts`
+- `PUT /contacts/{}` — `apps/dashboard/pages/api/contacts/[id]/index.ts`
+
+**`/conversation`**
+- `GET /conversation/{}/contact` — `apps/dashboard/pages/api/conversation/[conversationId]/contact.ts`
+- `POST /conversation/dislike` — `apps/dashboard/pages/api/conversation/dislike.ts`
+- `POST /conversation/{}/contact` — `apps/dashboard/pages/api/conversation/[conversationId]/contact.ts`
+
+**`/conversations`**
+- `DELETE /conversations/{}` — `apps/dashboard/pages/api/conversations/[conversationId]/index.tsx`
+- `DELETE /conversations/{}/tags` — `apps/dashboard/pages/api/conversations/[conversationId]/tags.ts`
+- `GET /conversations` — `apps/dashboard/pages/api/conversations/index.ts`
+- `GET /conversations/reminders` — `apps/dashboard/pages/api/conversations/reminders.ts`
+- `GET /conversations/validate` — `apps/dashboard/pages/api/conversations/validate.ts`
+- `GET /conversations/{}` — `apps/dashboard/pages/api/conversations/[conversationId]/index.tsx`
+- `GET /conversations/{}/quick-messages` — `apps/dashboard/pages/api/conversations/[conversationId]/quick-messages.ts`
+- `PATCH /conversations/activate-ai` — `apps/dashboard/pages/api/conversations/activate-ai.ts`
+- `PATCH /conversations/{}` — `apps/dashboard/pages/api/conversations/[conversationId]/index.tsx`
+- `PATCH /conversations/{}/nps-override` — `apps/dashboard/pages/api/conversations/[conversationId]/nps-override.ts`
+- `POST /conversations/eval-answer` — `apps/dashboard/pages/api/conversations/eval-answer.ts`
+- `POST /conversations/export` — `apps/dashboard/pages/api/conversations/export.ts`
+- `POST /conversations/redistribute` — `apps/dashboard/pages/api/conversations/redistribute.ts`
+- `POST /conversations/update-status` — `apps/dashboard/pages/api/conversations/update-status.ts`
+- `POST /conversations/{}` — `apps/dashboard/pages/api/conversations/[conversationId]/index.tsx`
+- `POST /conversations/{}/claim` — `apps/dashboard/pages/api/conversations/[conversationId]/claim.ts`
+- `POST /conversations/{}/mark-read` — `apps/dashboard/pages/api/conversations/[conversationId]/mark-read.ts`
+- `POST /conversations/{}/mark-unread` — `apps/dashboard/pages/api/conversations/[conversationId]/mark-unread.ts`
+- `POST /conversations/{}/message` — `apps/dashboard/pages/api/conversations/[conversationId]/message.tsx`
+- `POST /conversations/{}/nps` — `apps/dashboard/pages/api/conversations/[conversationId]/nps.tsx`
+- `POST /conversations/{}/quick-messages` — `apps/dashboard/pages/api/conversations/[conversationId]/quick-messages.ts`
+- `POST /conversations/{}/schedule-followup` — `apps/dashboard/pages/api/conversations/[conversationId]/schedule-followup.ts`
+- `POST /conversations/{}/transfer-channel` — `apps/dashboard/pages/api/conversations/[conversationId]/transfer-channel.ts`
+- `POST /conversations/{}/typing` — `apps/dashboard/pages/api/conversations/[conversationId]/typing.ts`
+- `PUT /conversations/reminders` — `apps/dashboard/pages/api/conversations/reminders.ts`
+- `PUT /conversations/{}/quick-messages` — `apps/dashboard/pages/api/conversations/[conversationId]/quick-messages.ts`
+
+**`/crm`**
+- `GET /crm/step/{}/removed-count` — `apps/dashboard/pages/api/crm/step/[id]/removed-count.ts`
+- `PUT /crm/scenario/order` — `apps/dashboard/pages/api/crm/scenario/order/index.ts`
+- `PUT /crm/step/conversation/order` — `apps/dashboard/pages/api/crm/step/conversation/order/index.ts`
+- `PUT /crm/step/order` — `apps/dashboard/pages/api/crm/step/order/index.ts`
+
+**`/datasources`**
+- `GET /datasources/running` — `apps/dashboard/pages/api/datasources/running.ts`
+- `GET /datasources/{}/chunks/{}` — `apps/dashboard/pages/api/datasources/[id]/chunks/[chunkId].ts`
+- `POST /datasources/bulk-delete` — `apps/dashboard/pages/api/datasources/bulk-delete.ts`
+- `POST /datasources/check` — `apps/dashboard/pages/api/datasources/check.ts`
+- `POST /datasources/{}/synch` — `apps/dashboard/pages/api/datasources/[id]/synch.ts`
+
+**`/datastores`**
+- `DELETE /datastores/{}/api-keys` — `apps/dashboard/pages/api/datastores/[id]/api-keys.ts`
+- `GET /datastores` — `apps/dashboard/pages/api/datastores/index.ts`
+- `GET /datastores/{}/api-keys` — `apps/dashboard/pages/api/datastores/[id]/api-keys.ts`
+- `POST /datastores/{}/api-keys` — `apps/dashboard/pages/api/datastores/[id]/api-keys.ts`
+- `POST /datastores/{}/generate-upload-link` — `apps/dashboard/pages/api/datastores/[id]/generate-upload-link.ts`
+
+**`/dispatches`**
+- `GET /dispatches/{}/logs` — `apps/dashboard/pages/api/dispatches/[id]/logs.ts`
+- `POST /dispatches/contacts/lists/from-filter` — `apps/dashboard/pages/api/dispatches/contacts/lists/from-filter.ts`
+- `POST /dispatches/total-contacts` — `apps/dashboard/pages/api/dispatches/total-contacts.ts`
+- `POST /dispatches/{}/retry` — `apps/dashboard/pages/api/dispatches/[id]/retry.ts`
+- `POST /dispatches/{}/stop` — `apps/dashboard/pages/api/dispatches/[id]/stop.ts`
+- `PUT /dispatches/{}/archive` — `apps/dashboard/pages/api/dispatches/[id]/archive.ts`
+
+**`/external`**
+- `POST /external/datastores/file-upload/generate-link/{}` — `apps/dashboard/pages/api/external/datastores/file-upload/generate-link/[id].ts`
+- `POST /external/datastores/file-upload/process/{}` — `apps/dashboard/pages/api/external/datastores/file-upload/process/[id].ts`
+- `POST /external/datastores/file-upload/{}` — `apps/dashboard/pages/api/external/datastores/file-upload/[id].ts`
+- `POST /external/datastores/update/{}` — `apps/dashboard/pages/api/external/datastores/update/[id].ts`
+- `POST /external/datastores/upsert/{}` — `apps/dashboard/pages/api/external/datastores/upsert/[id].ts`
+
+**`/forms`**
+- `DELETE /forms/{}` — `apps/dashboard/pages/api/forms/[formId]/index.tsx`
+- `DELETE /forms/{}/admin` — `apps/dashboard/pages/api/forms/[formId]/admin.ts`
+- `GET /forms` — `apps/dashboard/pages/api/forms/index.ts`
+- `GET /forms/{}` — `apps/dashboard/pages/api/forms/[formId]/index.tsx`
+- `GET /forms/{}/submissions` — `apps/dashboard/pages/api/forms/[formId]/submissions.ts`
+- `PATCH /forms/{}/admin` — `apps/dashboard/pages/api/forms/[formId]/admin.ts`
+- `POST /forms` — `apps/dashboard/pages/api/forms/index.ts`
+- `POST /forms/{}` — `apps/dashboard/pages/api/forms/[formId]/index.tsx`
+- `POST /forms/{}/publish` — `apps/dashboard/pages/api/forms/[formId]/publish.ts`
+
+**`/logs`**
+- `GET /logs` — `apps/dashboard/pages/api/logs/index.ts`
+- `GET /logs/count-unread` — `apps/dashboard/pages/api/logs/count-unread.ts`
+- `GET /logs/{}` — `apps/dashboard/pages/api/logs/[id]/index.tsx`
+- `PATCH /logs/{}` — `apps/dashboard/pages/api/logs/[id]/index.tsx`
+
+**`/mercadolivre`**
+- `GET /mercadolivre/products/sync` — `apps/dashboard/pages/api/mercadolivre/products/sync.ts`
+- `POST /mercadolivre/products` — `apps/dashboard/pages/api/mercadolivre/products/index.ts`
+- `POST /mercadolivre/products/bulk-update` — `apps/dashboard/pages/api/mercadolivre/products/bulk-update.ts`
+
+**`/messages`**
+- `DELETE /messages/{}` — `apps/dashboard/pages/api/messages/[messageId].ts`
+- `POST /messages/mark-all-read` — `apps/dashboard/pages/api/messages/mark-all-read.ts`
+- `PUT /messages/{}` — `apps/dashboard/pages/api/messages/[messageId].ts`
+
+**`/tags`**
+- `DELETE /tags/delete-by-name` — `apps/dashboard/pages/api/tags/delete-by-name.ts`
+
+**`/variables`**
+- `PATCH /variables/{}` — `apps/dashboard/pages/api/variables/[conversationId]/index.ts`
+- `PATCH /variables/{}/{}` — `apps/dashboard/pages/api/variables/[conversationId]/[varName]/index.ts`
+- `POST /variables/{}` — `apps/dashboard/pages/api/variables/[conversationId]/index.ts`
+- `POST /variables/{}/{}` — `apps/dashboard/pages/api/variables/[conversationId]/[varName]/index.ts`
+
+**`/voltapi`**
+- `POST /voltapi` — `apps/dashboard/pages/api/voltapi/index.ts`
+
+**`/webhook`**
+- `GET /webhook/get-data-users` — `apps/dashboard/pages/api/webhook/get-data-users.ts`
+- `POST /webhook/validate` — `apps/dashboard/pages/api/webhook/validate.ts`
+
+**`/whatsapp`**
+- `DELETE /whatsapp/templates/{}` — `apps/dashboard/pages/api/whatsapp/templates/[templateId].ts`
+- `GET /whatsapp/templates/{}` — `apps/dashboard/pages/api/whatsapp/templates/[templateId].ts`
+- `POST /whatsapp/templates/send-test` — `apps/dashboard/pages/api/whatsapp/templates/send-test.ts`
+- `POST /whatsapp/templates/upload-media` — `apps/dashboard/pages/api/whatsapp/templates/upload-media.ts`
+- `POST /whatsapp/templates/validate-media` — `apps/dashboard/pages/api/whatsapp/templates/validate-media.ts`
+
+**`/zapi`**
+- `GET /zapi/hasZapiProvider` — `apps/dashboard/pages/api/zapi/hasZapiProvider.ts`
+
+**`/zapper`**
+- `DELETE /zapper/instances/{}` — `apps/dashboard/pages/api/zapper/instances/[id].ts`
+- `GET /zapper/instances` — `apps/dashboard/pages/api/zapper/instances/index.ts`
+- `GET /zapper/instances/{}` — `apps/dashboard/pages/api/zapper/instances/[id].ts`
+- `GET /zapper/instances/{}/connection` — `apps/dashboard/pages/api/zapper/instances/[id]/connection.ts`
+- `GET /zapper/integrations` — `apps/dashboard/pages/api/zapper/integrations.ts`
+- `PATCH /zapper/instances/{}` — `apps/dashboard/pages/api/zapper/instances/[id].ts`
+- `POST /zapper/accounts` — `apps/dashboard/pages/api/zapper/accounts.ts`
+- `POST /zapper/instances` — `apps/dashboard/pages/api/zapper/instances/index.ts`
+- `POST /zapper/instances/db` — `apps/dashboard/pages/api/zapper/instances/db.ts`
+- `POST /zapper/instances/webhook` — `apps/dashboard/pages/api/zapper/instances/webhook.ts`
+- `POST /zapper/instances/{}/restart` — `apps/dashboard/pages/api/zapper/instances/[id]/restart.ts`
+
+
+## 11. Testes ao vivo com chave de teste (2026-10-30)
+
+Rodados com uma chave de teste fornecida pelo usuário no chat. Só leituras e requisições sem
+efeito colateral: nenhum agente, base ou conversa foi criado, alterado ou apagado. A chave não foi
+gravada em nenhum arquivo do repositório.
+
+- `tests/smoke.sh --live`: 213 PASS, 0 FAIL, 1 SKIP (o caso que exige `CHATVOLT_AGENT_ID`).
+- `agent-admin/scripts/check-handle.sh`: handle livre responde `disponível`; handle já usado responde `já usado pelo agente <id>`. Os dois casos ao vivo.
+- `agent-admin/scripts/generate-prompt.sh`: gerou um `systemPrompt` coerente com os campos enviados (exit 0). Esta chamada consome a IA da organização.
+- `GET /api/logs/{id}/assignment-history`: 200 em `api.chatvolt.ai` com um ID real de conversa; sem `/api`, 404.
+- `POST /crm/card` e `POST /whatsapp/conversion-tracking` sem corpo: 400 de validação, prova de que as rotas existem.
+- `POST /datastores/query/{id}/old`: 404 de página do Next.js, sem rota.
+- `GET /conversation-event-log`, `GET /dispatches/contacts/link`: 404, coerentes com indisponível / não implementado.
+- `GET /crm/step/{id}`, `GET /crm/scenario/{id}`, `POST /crm/scenario/{id}/conversation`: 404 com ID inventado. Teste inconclusivo, já que o mesmo 404 aparece para recurso inexistente. Sem arquivo de rota no código, a conclusão é "não implementado".
+- `GET /agent-templates/{id}` com ID inventado: 404, esperado pela regra de organização de templates.

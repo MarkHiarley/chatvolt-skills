@@ -19,6 +19,16 @@ USAGE_LIMIT`, tratado com aviso claro.
 > **Pré-requisitos:** Chave de API (https://app.chatvolt.ai/settings/api-keys)
 > e, para whitelist/blacklist, o `agentId` do agente.
 
+## Passo 0 — verificar atualizações
+
+Toda vez que esta skill é carregada, rode a checagem antes de operar (leva ~1s e não bloqueia):
+
+```bash
+scripts/check-updates.sh
+```
+
+Ela compara a doc OpenAPI publicada (docs.chatvolt.ai), as operações da fonte da doc e o código-fonte do Chatvolt com o que as skills conhecem. Se aparecer `MUDOU`, `fora do catálogo` ou `Código-fonte MUDOU`, **avise o usuário** antes de agir e diga o que mudou — a lista vem no próprio relatório. Sem rede, a skill segue normalmente. `CV_UPDATE_CHECK=0` desliga a checagem.
+
 ## Como funciona
 
 1. Você informa a **API key** (1º argumento ou `CHATVOLT_API_KEY`).
@@ -50,6 +60,9 @@ USAGE_LIMIT`, tratado com aviso claro.
 | `POST` | `/agent-blacklist` | Adiciona usuário(s) (`agentId` + `userIdentify`) |
 | `DELETE` | `/agent-blacklist/{agentId}?id=<entry-id>` | Remove uma entrada |
 | `POST` | `/forms/{formId}/chat` | Envia um formulário ao agente (`{form:{fields:[{label,value}]}}`) |
+| `POST` | `/agents/generate-prompt` | Gera o `systemPrompt` por IA a partir de público, ações e limites (10/min por organização) |
+| `POST` | `/agents/check-handle-available` | Verifica se um `handle` está livre (`{handle}` → `{available, agentId}`) |
+| `GET` | `/agent-templates/{organizationId}` | Lista os templates de agente (só a organização de templates; outro id → 404) |
 
 Base URL: `https://api.chatvolt.ai` · `Authorization: Bearer <api-key>` · docs:
 <https://chat-volt.mintlify.app/pages/agents/reference>
@@ -81,6 +94,19 @@ Base URL: `https://api.chatvolt.ai` · `Authorization: Bearer <api-key>` · docs
   genérico”; o caminho feliz é validado no stub de teste.
 - **`POST /forms/{formId}/chat`** responde `{data:{...},success:true}` — é uma
   escrita que envia dados a um agente real, então `submit-form.sh` confirma.
+- **`POST /agents/generate-prompt`** (verificado no código-fonte, não ao vivo):
+  corpo `agentName`, `companyName`, `sector`, `objective`, `publicoAlvo`, `acoes`,
+  `limites` (limites de 200/300/2000 caracteres); resposta `{systemPrompt}`. Se a
+  IA falhar, a rota devolve um prompt montado com os campos — nunca um erro. Limite
+  de 10 chamadas/min por organização (`429`, com retry automático no script).
+- **`POST /agents/check-handle-available`** (verificado no código-fonte): corpo
+  `{handle}`, resposta `{agentId, available}`. Regras: 3 a 30 caracteres, só
+  `[a-zA-Z0-9_]`, sem `_` no início ou no fim; a API grava em minúsculas.
+- **`POST /agents/{id}/clone` não funciona com API key**: a rota só aceita sessão
+  de SUPERADMIN (`403 Super Admin use only`). Não há script para isso.
+- **`GET /agent-templates/{organizationId}`** responde `{success, templates, count}`
+  e só aceita o id da organização de templates configurada no servidor; qualquer
+  outro id responde `404`. Esse id não é público: peça ao time Chatvolt.
 - Erros tratados: `400`, `401/403` (chave/permissão), `402` (quota, exit 3),
   `404`, `406`, `429` (backoff automático), `5xx`. Rate limit: 60 req/min,
   10.000 req/dia, payload 1 MB.
@@ -105,6 +131,27 @@ Base URL: `https://api.chatvolt.ai` · `Authorization: Bearer <api-key>` · docs
 - `scripts/submit-form.sh [api-key] <form-id> --field "Rótulo=Valor" [--field …] [--json '<extra>'] [--yes]`
   — envia o formulário ao agente (confirma).
 
+- `scripts/check-handle.sh [api-key] <handle>` — diz se o handle está livre
+  (`disponível` ou `já usado pelo agente <id>`). Valida as regras antes da chamada.
+- `scripts/generate-prompt.sh [api-key] --agent-name <n> [--company <c>] [--sector <s>] [--objective <o>] [--audience <p>] [--actions <a>] [--limits <l>]`
+  — imprime o prompt gerado (com `CV_JSON=1`, `{"systemPrompt": ...}`). Valida os
+  limites de tamanho antes de gastar uma chamada de IA.
+- `scripts/templates.sh [api-key] <organization-id> [--filter <regex>]` — lista os
+  templates publicados (id, nome, modelo, descrição). Não cria nada.
+
 Saída: resultados em **stdout**, diagnósticos em **stderr**. Com `CV_JSON=1` o
 stdout contém **somente JSON**. Exit codes: `0` ok · `1` erro de cliente ·
 `3` quota (402) · `4` rede · `5` servidor · `130` cancelado.
+
+## Fluxo: criar um agente completo
+
+1. `check-handle.sh` — escolha um handle livre (se for usar `--handle`).
+2. `generate-prompt.sh` — opcional: gere o `systemPrompt` a partir do público,
+   das ações e dos limites do agente. Revise o texto com o usuário.
+3. `create-agent.sh` — com `--name`, `--description` e `--system-prompt` (o prompt
+   pode vir de arquivo com `@caminho`). Pede confirmação.
+4. Depois de criado: ferramentas (skill `tools-update`), bases (`datastore-add`),
+   WhatsApp (`whitelist.sh`).
+
+Para partir de um template, use `templates.sh` para ver as opções. A criação a
+partir do template ainda é manual: passe os campos desejados ao `create-agent.sh`.

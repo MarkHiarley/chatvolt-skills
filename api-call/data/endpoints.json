@@ -35,7 +35,8 @@
     "webhook",
     "whatsapp",
     "zapi",
-    "zapper"
+    "zapper",
+    "logs"
   ],
   "operations": [
     {
@@ -996,6 +997,132 @@
       "group": "contacts",
       "availability": "disponível (existe ao vivo, fora do openapi publicado)",
       "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/agents/generate-prompt",
+      "group": "agents",
+      "availability": "não está no OpenAPI publicado; verificado no código-fonte (apps/dashboard/pages/api/agents/generate-prompt.ts)",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/agents/check-handle-available",
+      "group": "agents",
+      "availability": "não está no OpenAPI publicado; verificado no código-fonte (apps/dashboard/pages/api/agents/check-handle-available.ts)",
+      "documented": false
+    },
+    {
+      "method": "DELETE",
+      "path": "/dispatches/contacts/link",
+      "group": "dispatches",
+      "availability": "não implementado: a doc marca 'not yet implemented' e não há arquivo de rota no código",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/dispatches/contacts/link",
+      "group": "dispatches",
+      "availability": "não implementado: a doc marca 'not yet implemented' e não há arquivo de rota no código",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/dispatches/{id}",
+      "group": "dispatches",
+      "availability": "não implementado: a doc marca 'not yet implemented' e não há arquivo de rota no código (a doc manda usar GET /dispatches)",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/crm/scenario/{scenarioId}",
+      "group": "crm",
+      "availability": "não implementado: a doc marca 'not yet implemented' e não há arquivo de rota no código (a doc manda usar GET /crm/scenario)",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/crm/step/{stepId}",
+      "group": "crm",
+      "availability": "não implementado: a doc marca 'not yet implemented' e não há arquivo de rota no código (a doc manda usar GET /crm/step)",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/crm/step/{stepId}/conversation",
+      "group": "crm",
+      "availability": "não implementado: a doc marca 'not yet implemented' e não há arquivo de rota no código",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/crm/scenario/{scenarioId}/conversation",
+      "group": "crm",
+      "availability": "não implementado: a doc marca 'not yet implemented' e não há arquivo de rota no código",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/conversation-event-log",
+      "group": "conversation",
+      "availability": "indisponível: a doc diz que a implementação está desativada temporariamente; não há arquivo de rota",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/crm/card",
+      "group": "crm",
+      "availability": "existe no código (crm/card/index.ts); a página da doc está vazia, sem corpo documentado",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/logs/{conversationId}/assignment-history",
+      "group": "logs",
+      "availability": "existe e responde 200 ao vivo em api.chatvolt.ai/api/logs/{id}/assignment-history (o prefixo /api é obrigatório; sem ele, 404); resposta documentada com exemplo",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/datastores/file-upload/generate-link/{datastoreId}",
+      "group": "datastores",
+      "availability": "existe no código como rota externa (rewrite para external/datastores/file-upload/generate-link); corpo documentado: type, fileName",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/datastores/file-upload/{datastoreId}",
+      "group": "datastores",
+      "availability": "existe no código como rota externa (rewrite para external/datastores/file-upload); corpo documentado: id",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/datastores/query/{datastore_id}/old",
+      "group": "datastores",
+      "availability": "não encontrado no código: nenhuma rota correspondente em pages/api nem nas rewrites lidas; a doc a marca como existente",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/datastores/update/{datastoreId}",
+      "group": "datastores",
+      "availability": "deprecated na doc; existe no código como rota externa (rewrite para external/datastores/update)",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/datastores/upsert/{datastoreId}",
+      "group": "datastores",
+      "availability": "deprecated na doc; existe no código como rota externa (rewrite para external/datastores/upsert)",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/whatsapp/conversion-tracking",
+      "group": "whatsapp",
+      "availability": "existe no código (whatsapp/conversion-tracking.ts); doc completa (Meta CAPI, CTWA)",
+      "documented": true
     }
   ]
 }

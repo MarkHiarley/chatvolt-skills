@@ -15,6 +15,16 @@ extraídas do `openapi.yaml` publicado) sem depender de uma skill específica.
 > **Pré-requisitos:** Chave de API (https://app.chatvolt.ai/settings/api-keys).
 > Algumas rotas exigem IDs específicos (agente, base, conversa, cenário).
 
+## Passo 0 — verificar atualizações
+
+Toda vez que esta skill é carregada, rode a checagem antes de operar (leva ~1s e não bloqueia):
+
+```bash
+scripts/check-updates.sh
+```
+
+Ela compara a doc OpenAPI publicada (docs.chatvolt.ai), as operações da fonte da doc e o código-fonte do Chatvolt com o que as skills conhecem. Se aparecer `MUDOU`, `fora do catálogo` ou `Código-fonte MUDOU`, **avise o usuário** antes de agir e diga o que mudou — a lista vem no próprio relatório. Sem rede, a skill segue normalmente. `CV_UPDATE_CHECK=0` desliga a checagem.
+
 ## Como funciona
 
 1. Você me diz o que quer fazer (ou qual endpoint).

@@ -19,6 +19,16 @@ confirmação antes de qualquer escrita.
 > **Pré-requisitos:** Chave de API (https://app.chatvolt.ai/settings/api-keys) e,
 > para criar/atualizar artefatos, um `categoryId` existente (`categories.sh list`).
 
+## Passo 0 — verificar atualizações
+
+Toda vez que esta skill é carregada, rode a checagem antes de operar (leva ~1s e não bloqueia):
+
+```bash
+scripts/check-updates.sh
+```
+
+Ela compara a doc OpenAPI publicada (docs.chatvolt.ai), as operações da fonte da doc e o código-fonte do Chatvolt com o que as skills conhecem. Se aparecer `MUDOU`, `fora do catálogo` ou `Código-fonte MUDOU`, **avise o usuário** antes de agir e diga o que mudou — a lista vem no próprio relatório. Sem rede, a skill segue normalmente. `CV_UPDATE_CHECK=0` desliga a checagem.
+
 ## Como funciona
 
 1. Você informa a **API key** (argumento ou `CHATVOLT_API_KEY`).

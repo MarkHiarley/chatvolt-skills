@@ -58,6 +58,15 @@ lint() {
   hashes=$(sha256sum */scripts/_lib.sh | awk '{print $1}' | sort -u | wc -l)
   if [ "$hashes" = "1" ]; then ok "_lib.sh igual em ${#SKILLS[@]} skills"; else bad "_lib.sh divergente entre skills ($hashes versões)"; fi
 
+  head_ "lint: check-updates.sh idêntico e Passo 0 em todas as skills"
+  hashes=$(sha256sum */scripts/check-updates.sh 2>/dev/null | awk '{print $1}' | sort -u | wc -l)
+  if [ "$hashes" = "1" ]; then ok "check-updates.sh igual em ${#SKILLS[@]} skills"; else bad "check-updates.sh ausente ou divergente ($hashes versões)"; fi
+  local s_nopass=""
+  for s in "${SKILLS[@]}"; do
+    grep -q 'scripts/check-updates.sh' "$s/SKILL.md" 2>/dev/null || s_nopass="$s_nopass $s"
+  done
+  if [ -z "$s_nopass" ]; then ok "todas as SKILL.md têm o Passo 0 (check-updates)"; else bad "SKILL.md sem Passo 0:$s_nopass"; fi
+
   head_ "lint: cada skill tem SKILL.md com name: chatvolt-<ref>"
   local s
   for s in "${SKILLS[@]}"; do
