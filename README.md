@@ -16,7 +16,7 @@ Skills para o **pi** (agente de IA) que permitem gerenciar, testar e ajustar age
 | **api-call** | Chama qualquer endpoint da API (136 operações) e lista o catálogo de rotas disponíveis |
 | **contacts** | Gerencia contatos e variáveis de contato |
 | **conversation-actions** | Ações de atendimento: assign, status, prioridade, IA, notas, tags, variáveis, envio, export |
-| **agent-admin** | Cria/lista/deleta agentes, whitelist e envio de formulário ao agente |
+| **agent-admin** | Cria/lista/deleta agentes, gera o prompt por IA, checa handle livre, lista templates, whitelist e envio de formulário ao agente |
 | **artifacts** | Catálogo de artefatos, categorias, mídia (upload) e busca |
 | **crm** | Cenários, etapas, logs de conversa e eventos em tempo real (SSE) |
 | **dispatches** | Disparos em massa, listas de contatos e fila de envio |
@@ -24,6 +24,11 @@ Skills para o **pi** (agente de IA) que permitem gerenciar, testar e ajustar age
 | **integrations** | Envio por Twilio, Z-API e Zapper |
 | **tags** | Tags da organização (indisponível neste plano: as rotas respondem 404) |
 | **mercadolivre** | Produtos sincronizados do Mercado Livre |
+
+> **Atualizações:** toda skill roda `scripts/check-updates.sh` ao ser carregada (Passo 0 no
+> `SKILL.md`). Ela avisa quando a doc OpenAPI (docs.chatvolt.ai), as operações da fonte da doc
+> ou o código-fonte `appchatvolt_dev` mudaram. Desligue com `CV_UPDATE_CHECK=0`; aponte o clone
+> com `CV_SRC=/caminho/do/appchatvolt_dev`. Detalhes em [SOURCES.md](SOURCES.md), seção 8.
 
 ---
 

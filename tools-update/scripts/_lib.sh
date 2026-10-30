@@ -149,3 +149,159 @@ cv_confirm() {
   read -r answer
   case "$answer" in s|S|sim|SIM|y|Y|yes) return 0 ;; *) echo "Cancelado." >&2; exit 130 ;; esac
 }
+
+# cv_check_updates — verifica se a API/doc mudaram desde a última vez. Roda no
+# carregamento de toda skill (scripts/check-updates.sh). Compara:
+#   1. o OpenAPI publicado com o catálogo api-call/data/endpoints.json;
+#   2. as operações de apps/docs (fonte do docs.chatvolt.ai) com o catálogo;
+#   3. o HEAD do monorepo appchatvolt_dev com o último visto (se o clone existir).
+# Nunca falha: sem rede ou sem clone local vira uma linha de aviso.
+#   CV_UPDATE_CHECK=0  desliga a verificação
+#   CV_OPENAPI_URL     spec publicado (default: https://chat-volt.mintlify.app/openapi.yaml)
+#   CV_SRC             monorepo appchatvolt_dev (default: ~/Área de trabalho/ChatvoltRepositorios/appchatvolt_dev)
+#   CV_STATE_DIR       estado entre execuções (default: ~/.local/state/chatvolt-skills)
+cv_check_updates() {
+  [ "${CV_UPDATE_CHECK:-1}" = "0" ] && return 0
+  local here catalog state_dir report
+  here="$(cd "$(dirname "$(realpath "${BASH_SOURCE[0]}")")" && pwd)"
+  catalog="$here/../../api-call/data/endpoints.json"
+  state_dir="${CV_STATE_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/chatvolt-skills}"
+  mkdir -p "$state_dir" 2>/dev/null || return 0
+  report=$(
+    CV_OPENAPI_URL="${CV_OPENAPI_URL:-https://chat-volt.mintlify.app/openapi.yaml}" \
+    CV_SRC="${CV_SRC:-$HOME/Área de trabalho/ChatvoltRepositorios/appchatvolt_dev}" \
+    CV_CATALOG="$([ -f "$catalog" ] && realpath "$catalog")" \
+    CV_STATE_FILE="$state_dir/updates.json" \
+    python3 - <<'PY' 2>/dev/null
+import datetime, glob, hashlib, json, os, re, subprocess, sys, urllib.request
+
+URL = os.environ["CV_OPENAPI_URL"]
+SRC = os.environ.get("CV_SRC", "")
+CATALOG = os.environ.get("CV_CATALOG", "")
+STATE_FILE = os.environ["CV_STATE_FILE"]
+
+def norm(method, path):
+    # Parâmetros de rota viram "{}" e o prefixo /api (usado só na doc-fonte) sai.
+    p = re.sub(r"\{[^}]+\}", "{}", path.rstrip("/") or "/")
+    if p.startswith("/api/"):
+        p = p[4:]
+    return f"{method.upper()} {p}"
+
+try:
+    with open(STATE_FILE, encoding="utf-8") as f:
+        state = json.load(f)
+except Exception:
+    state = {}
+
+new_state = dict(state)
+new_state["checked_at"] = datetime.datetime.now().isoformat(timespec="seconds")
+lines = []
+known = set()
+catalog_label = "catálogo salvo"
+
+if CATALOG and os.path.isfile(CATALOG):
+    with open(CATALOG, encoding="utf-8") as f:
+        cat = json.load(f)
+    known = {norm(o["method"], o["path"]) for o in cat.get("operations", [])}
+    catalog_label = "catálogo api-call"
+else:
+    known = set(state.get("known_ops", []))
+
+# 1. OpenAPI publicado
+doc_ops = None
+try:
+    req = urllib.request.Request(URL, headers={"User-Agent": "chatvolt-skills-update-check"})
+    raw = urllib.request.urlopen(req, timeout=10).read()
+    sha = hashlib.sha256(raw).hexdigest()[:12]
+    doc_ops = set()
+    current = None
+    for line in raw.decode("utf-8", "replace").splitlines():
+        m = re.match(r"^  (/\S*):\s*$", line)
+        if m:
+            current = m.group(1)
+            continue
+        m = re.match(r"^    (get|post|put|patch|delete):\s*$", line)
+        if m and current:
+            doc_ops.add(norm(m.group(1), current))
+    if not known:
+        known = set(doc_ops)
+        new_state["known_ops"] = sorted(known)
+    prev_sha = state.get("doc_sha")
+    prev_ops = set(state.get("doc_ops", []))
+    if prev_sha is None:
+        lines.append(f"OpenAPI: primeira verificação ({len(doc_ops)} operações, sha {sha})")
+    elif prev_sha != sha:
+        added = sorted(doc_ops - prev_ops)
+        removed = sorted(prev_ops - doc_ops)
+        lines.append(f"OpenAPI MUDOU: +{len(added)} / -{len(removed)} operações (sha {prev_sha} → {sha})")
+        lines += [f"   + {o}" for o in added[:10]]
+        lines += [f"   - {o}" for o in removed[:10]]
+    else:
+        lines.append(f"OpenAPI: sem mudanças desde a última verificação (sha {sha})")
+    gaps = sorted(doc_ops - known)
+    if gaps:
+        lines.append(f"Catálogo desatualizado: {len(gaps)} operação(ões) da doc fora do {catalog_label}")
+        lines += [f"   + {o}" for o in gaps[:10]]
+    new_state["doc_sha"] = sha
+    new_state["doc_ops"] = sorted(doc_ops)
+except Exception as exc:
+    lines.append(f"OpenAPI: não consegui consultar ({type(exc).__name__}); verificação pulada")
+
+def git(*args):
+    return subprocess.run(["git", "-C", SRC, *args], capture_output=True, text=True, timeout=15)
+
+# 2 e 3. Monorepo local: fonte da doc (apps/docs) e rotas (apps/dashboard/pages/api)
+if SRC and os.path.exists(os.path.join(SRC, ".git")):
+    head_proc = git("rev-parse", "HEAD")
+    head = head_proc.stdout.strip() if head_proc.returncode == 0 else ""
+    if head:
+        docs_ops = set()
+        for root, dirs, files in os.walk(os.path.join(SRC, "apps", "docs")):
+            dirs[:] = [d for d in dirs if d != "node_modules"]
+            for name in files:
+                if not name.endswith(".mdx"):
+                    continue
+                with open(os.path.join(root, name), encoding="utf-8", errors="ignore") as f:
+                    text = f.read()
+                for m in re.finditer(r'^openapi:\s*["\']?(GET|POST|PUT|PATCH|DELETE)\s+(\S+?)["\']?\s*$', text, re.M):
+                    op = norm(m.group(1), m.group(2))
+                    if not op.endswith(" /"):
+                        docs_ops.add(op)
+        gaps = sorted(docs_ops - known)
+        if gaps:
+            lines.append(f"Fonte da doc (apps/docs): {len(gaps)} operação(ões) fora do {catalog_label}")
+            lines += [f"   + {o}" for o in gaps[:10]]
+
+        prev = state.get("src_head")
+        if prev is None:
+            lines.append(f"Código-fonte ({os.path.basename(SRC)}): baseline em {head[:8]}")
+        elif prev != head:
+            diff = git("diff", "--name-only", prev, head, "--", "apps/dashboard/pages/api", "apps/docs")
+            if diff.returncode == 0:
+                files = [x for x in diff.stdout.split("\n") if x]
+                lines.append(f"Código-fonte MUDOU: {len(files)} arquivo(s) de API/doc ({prev[:8]} → {head[:8]})")
+                lines += [f"   ~ {x}" for x in files[:10]]
+            else:
+                lines.append(f"Código-fonte mudou ({prev[:8]} → {head[:8]}), mas o commit anterior não está no clone local")
+        else:
+            lines.append(f"Código-fonte: sem mudanças desde a última verificação ({head[:8]})")
+        behind = git("rev-list", "--count", "HEAD..@{u}")
+        if behind.returncode == 0 and behind.stdout.strip() not in ("", "0"):
+            lines.append(f"Clone local está {behind.stdout.strip()} commit(s) atrás do remoto: rode git pull em {SRC} para ver o mais novo")
+        new_state["src_head"] = head
+
+try:
+    os.makedirs(os.path.dirname(STATE_FILE), exist_ok=True)
+    with open(STATE_FILE, "w", encoding="utf-8") as f:
+        json.dump(new_state, f, ensure_ascii=False, indent=2)
+except Exception:
+    pass
+
+if lines:
+    print("Atualizações Chatvolt:")
+    print("\n".join("  " + l if not l.startswith("   ") else l for l in lines))
+PY
+  ) || true
+  [ -n "$report" ] && cv_info "$report"
+  return 0
+}

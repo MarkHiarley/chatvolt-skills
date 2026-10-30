@@ -101,9 +101,110 @@
         "data": { "conversationId": "conv-form-1", "messageId": "m-f1" },
         "success": true
       }
+    },
+    {
+      "method": "POST",
+      "path": "/agents/generate-prompt",
+      "status": 200,
+      "body": { "systemPrompt": "Você é a Ana da Acme, responsável por atender clientes em conversas." }
+    },
+    {
+      "method": "POST",
+      "path": "/agents/check-handle-available",
+      "status": 200,
+      "body": { "agentId": null, "available": true }
+    },
+    {
+      "method": "GET",
+      "path": "/agent-templates/org-tpl-1",
+      "status": 200,
+      "body": {
+        "success": true,
+        "count": 1,
+        "templates": [
+          { "id": "tpl-1", "name": "Agente Vendas", "description": "Qualifica leads", "modelName": "gpt_54_nano", "systemPrompt": "Você qualifica leads." }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/agent-templates/outra-org",
+      "status": 404,
+      "body": { "error": "NOT_FOUND" }
     }
   ],
   "smoke": [
+    {
+      "desc": "generate-prompt.sh devolve o systemPrompt",
+      "cmd": "./agent-admin/scripts/generate-prompt.sh stub-key --agent-name Ana --company Acme",
+      "expect_out": "Você é a Ana"
+    },
+    {
+      "desc": "generate-prompt.sh CV_JSON=1 devolve JSON com systemPrompt",
+      "cmd": "CV_JSON=1 ./agent-admin/scripts/generate-prompt.sh stub-key --agent-name Ana",
+      "expect_out": "\"systemPrompt\""
+    },
+    {
+      "desc": "generate-prompt.sh sem --agent-name -> exit 1",
+      "cmd": "./agent-admin/scripts/generate-prompt.sh stub-key --company Acme",
+      "expect_out": "--agent-name é obrigatório",
+      "expect_exit": 1
+    },
+    {
+      "desc": "generate-prompt.sh limite de 200 caracteres -> exit 1",
+      "cmd": "./agent-admin/scripts/generate-prompt.sh stub-key --agent-name \"$(printf 'a%.0s' {1..201})\"",
+      "expect_out": "excede 200 caracteres",
+      "expect_exit": 1
+    },
+    {
+      "desc": "check-handle.sh handle livre",
+      "cmd": "./agent-admin/scripts/check-handle.sh stub-key agente_novo",
+      "expect_out": "disponível"
+    },
+    {
+      "desc": "check-handle.sh handle curto -> exit 1 (sem chamar a API)",
+      "cmd": "./agent-admin/scripts/check-handle.sh stub-key ab",
+      "expect_out": "menos de 3 caracteres",
+      "expect_exit": 1
+    },
+    {
+      "desc": "check-handle.sh handle com '_' inicial -> exit 1",
+      "cmd": "./agent-admin/scripts/check-handle.sh stub-key _ruim",
+      "expect_out": "não pode começar",
+      "expect_exit": 1
+    },
+    {
+      "desc": "check-handle.sh caractere inválido -> exit 1",
+      "cmd": "./agent-admin/scripts/check-handle.sh stub-key agente-novo",
+      "expect_out": "aceita só letras",
+      "expect_exit": 1
+    },
+    {
+      "desc": "templates.sh lista os templates da org",
+      "cmd": "./agent-admin/scripts/templates.sh stub-key org-tpl-1",
+      "expect_out": "Agente Vendas"
+    },
+    {
+      "desc": "templates.sh --filter sem resultado",
+      "cmd": "./agent-admin/scripts/templates.sh stub-key org-tpl-1 --filter inexistente",
+      "expect_out": "Total: 0"
+    },
+    {
+      "desc": "templates.sh org não-template -> exit 1 (404)",
+      "cmd": "./agent-admin/scripts/templates.sh stub-key outra-org",
+      "expect_out": "HTTP 404",
+      "expect_exit": 1
+    },
+    {
+      "desc": "check-updates.sh com CV_UPDATE_CHECK=0 é silencioso",
+      "cmd": "CV_UPDATE_CHECK=0 ./agent-admin/scripts/check-updates.sh",
+      "expect_out": ""
+    },
+    {
+      "desc": "check-updates.sh sem rede não quebra a skill (exit 0)",
+      "cmd": "CV_STATE_DIR=$(mktemp -d) CV_SRC=/caminho/inexistente CV_OPENAPI_URL=http://127.0.0.1:9/openapi.yaml ./agent-admin/scripts/check-updates.sh",
+      "expect_out": "não consegui consultar"
+    },
     {
       "desc": "list-agents.sh (array na raiz)",
       "cmd": "./agent-admin/scripts/list-agents.sh stub-key",
